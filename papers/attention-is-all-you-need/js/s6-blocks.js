@@ -127,13 +127,13 @@ Lab.section('s6', function () {
     },
     pe: {
       title: 'Positional Encoding', kind: '§3.5 · 위치 정보 더하기',
-      body: '<p>임베딩에 사인파 위치 벡터를 더합니다. 스택 맨 아래에서 한 번만 더하고, 이후로는 잔차 연결을 따라 위로 전달됩니다. 학습되는 파라미터는 없습니다.</p><p><a href="#s5">§5에서 자세히 →</a></p>'
+      body: '<p>임베딩에 사인파 위치 벡터를 더합니다. 스택 맨 아래에서 한 번만 더하고, 이후로는 잔차 연결을 따라 위로 전달됩니다. 학습되는 파라미터는 없습니다.</p><p><a href="#s4">§4에서 자세히 →</a></p>'
     },
     'enc-mha': {
       title: '인코더 Self-Attention', kind: '§3.2.3 · Q = K = V = 이전 층 출력',
       body: '<p>소스 문장의 모든 토큰이 서로를 봅니다. padding mask 외에는 가리는 칸이 없습니다(양방향).</p>' +
         '<dl><dt>attention 행렬</dt><dd>(B, h, n_src, n_src)</dd><dt>파라미터</dt><dd>4 × (512² + 512) = 1,050,624</dd></dl>' +
-        '<p><a href="#s2">§2 계산</a> · <a href="#s4">§4 multi-head</a></p>'
+        '<p><a href="#s2">§2 계산</a> · <a href="#s5">§5 multi-head</a></p>'
     },
     'dec-mmha': {
       title: '디코더 Masked Self-Attention', kind: '§3.2.3 · causal mask',

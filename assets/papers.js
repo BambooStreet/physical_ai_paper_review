@@ -10,7 +10,7 @@ window.PAPERS = [
     venue: 'NeurIPS 2017',
     arxiv: '1706.03762',
     authors: 'Vaswani, Shazeer, Parmar, Uszkoreit, Jones, Gomez, Kaiser, Polosukhin',
-    summary: 'RNN·CNN 없이 attention만으로 만든 번역 모델 Transformer. Scaled dot-product attention부터 마스킹, multi-head, 위치 인코딩, 학습 레시피까지 직접 계산하고, 마지막엔 브라우저에서 작은 Transformer를 학습시킵니다.',
+    summary: 'RNN·CNN 없이 attention만으로 만든 번역 모델 Transformer. Scaled dot-product attention부터 마스킹, 위치 인코딩, multi-head, 학습 레시피까지 직접 계산하고, 마지막엔 브라우저에서 작은 Transformer를 학습시킵니다.',
     tags: ['Transformer', 'Self-Attention', '기계번역', '브라우저 학습 실습'],
     sections: 11,
     status: 'ready'

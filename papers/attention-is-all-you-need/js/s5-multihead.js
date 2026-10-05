@@ -1,8 +1,8 @@
-/* §4 Multi-Head Attention — shape 추적, 헤드별 map, 비용 비교 */
-Lab.section('s4', function () {
+/* §5 Multi-Head Attention — shape 추적, 헤드별 map, 비용 비교 */
+Lab.section('s5', function () {
   var $ = Lab.$, $$ = Lab.$$, M = Lab.M, fmt = Lab.fmt, esc = Lab.esc;
 
-  /* ---------------- 실험 4-1: shape 추적 ---------------- */
+  /* ---------------- 실험 5-1: shape 추적 ---------------- */
   var STEPS = [
     { name: '입력 X', code: 'x', sym: ['B', 'n', 'd_model'], vis: 'flat0',
       note: '임베딩 + 위치 인코딩을 더한 입력입니다. 토큰 하나가 d_model차원 벡터 하나입니다.' },
@@ -26,7 +26,7 @@ Lab.section('s4', function () {
       note: 'W<sup>O</sup>(h·d_v × d_model)가 헤드들의 결과를 섞습니다. 입력과 같은 모양이라 잔차 연결이 가능합니다.' }
   ];
   var cur = 1;
-  var Bin = $('#s4-B'), nin = $('#s4-n'), dSel = $('#s4-d'), hSel = $('#s4-h');
+  var Bin = $('#s5-B'), nin = $('#s5-n'), dSel = $('#s5-d'), hSel = $('#s5-h');
   function cfg() {
     var d = +dSel.value, h = +hSel.value;
     return { B: Math.max(1, +Bin.value || 1), n: Math.max(1, +nin.value || 1), d_model: d, h: h, d_k: d / h };
@@ -35,14 +35,14 @@ Lab.section('s4', function () {
 
   function drawTable() {
     var c = cfg();
-    $('#s4-dk').textContent = c.d_k;
+    $('#s5-dk').textContent = c.d_k;
     var h = '<thead><tr><th class="num">#</th><th>단계 · 코드</th><th>shape</th></tr></thead><tbody>';
     STEPS.forEach(function (s, i) {
       h += '<tr data-i="' + i + '" tabindex="0" role="button" style="cursor:pointer"' + (i === cur ? ' class="sel"' : '') + '>' +
         '<td class="num">' + (i + 1) + '</td><td><b>' + s.name + '</b><br><code>' + esc(s.code) + '</code></td>' +
         '<td><span class="shape">' + symHtml(s.sym) + '</span><br><span class="shape alt">(' + s.sym.map(function (k) { return c[k]; }).join(', ') + ')</span></td></tr>';
     });
-    $('#s4-steps').innerHTML = h + '</tbody>';
+    $('#s5-steps').innerHTML = h + '</tbody>';
     drawSvg();
     drawCost();
   }
@@ -92,28 +92,28 @@ Lab.section('s4', function () {
       }
       out += '<text x="' + (X0 + 150) + '" y="22" text-anchor="middle">헤드 ' + h + '개 × (' + (maps ? c.n + ' × ' + c.n : c.n + ' × ' + c.d_k) + ')' + (h > 8 ? ' · 8장만 표시' : '') + '</text>';
     }
-    $('#s4-svg').innerHTML = out;
-    $('#s4-note').innerHTML = '<b>' + (cur + 1) + '. ' + s.name + '</b> · ' + s.note;
+    $('#s5-svg').innerHTML = out;
+    $('#s5-note').innerHTML = '<b>' + (cur + 1) + '. ' + s.name + '</b> · ' + s.note;
   }
-  $('#s4-steps').addEventListener('click', function (e) {
+  $('#s5-steps').addEventListener('click', function (e) {
     var tr = e.target.closest('tr[data-i]');
     if (!tr) return;
     cur = +tr.dataset.i; drawTable();
   });
-  $('#s4-steps').addEventListener('keydown', function (e) {
+  $('#s5-steps').addEventListener('keydown', function (e) {
     var tr = e.target.closest('tr[data-i]');
     if (!tr) return;
-    if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); cur = +tr.dataset.i; drawTable(); $('#s4-steps tr[data-i="' + cur + '"]').focus(); }
+    if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); cur = +tr.dataset.i; drawTable(); $('#s5-steps tr[data-i="' + cur + '"]').focus(); }
     if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
       e.preventDefault();
       cur = Lab.clamp(cur + (e.key === 'ArrowDown' ? 1 : -1), 0, STEPS.length - 1);
-      drawTable(); $('#s4-steps tr[data-i="' + cur + '"]').focus();
+      drawTable(); $('#s5-steps tr[data-i="' + cur + '"]').focus();
     }
   });
   [Bin, nin].forEach(function (el) { el.addEventListener('input', drawTable); });
   [dSel, hSel].forEach(function (el) { el.addEventListener('change', drawTable); });
 
-  /* ---------------- 실험 4-3: 비용 비교 ---------------- */
+  /* ---------------- 실험 5-3: 비용 비교 ---------------- */
   function drawCost() {
     var c = cfg(), n = c.n, d = c.d_model, h = c.h, dk = c.d_k;
     var rows = [
@@ -129,11 +129,11 @@ Lab.section('s4', function () {
       var ratio = r[2] / r[1];
       html += '<tr><td>' + r[0] + '</td><td class="num">' + Lab.int(r[1]) + '</td><td class="num">' + Lab.int(r[2]) + '</td><td class="num' + (Math.abs(ratio - 1) < 1e-9 ? ' best' : ' worst') + '">' + (Math.abs(ratio - 1) < 1e-9 ? '같음' : '× ' + fmt(ratio, 0)) + '</td></tr>';
     });
-    $('#s4-cost').innerHTML = html + '</tbody>';
+    $('#s5-cost').innerHTML = html + '</tbody>';
   }
   drawTable();
 
-  /* ---------------- 실험 4-2: 헤드별 attention map ---------------- */
+  /* ---------------- 실험 5-2: 헤드별 attention map ---------------- */
   var words = ['the', 'cat', 'sat', 'on', 'the', 'mat'];
   var noun = [0, 1, 0, 0, 0, 1];
   var ang = { the: 0, cat: 72, sat: 144, on: 216, mat: 288 };
@@ -183,19 +183,19 @@ Lab.section('s4', function () {
   }
   var caps = { 1: capture(1), 2: capture(2), 4: capture(4) };
   var hCur = 4;
-  Lab.seg($('#s4-hsel'), [{ v: 1, label: '1' }, { v: 2, label: '2' }, { v: 4, label: '4' }], hCur, function (v) { hCur = +v; drawHeads(); });
+  Lab.seg($('#s5-hsel'), [{ v: 1, label: '1' }, { v: 2, label: '2' }, { v: 4, label: '4' }], hCur, function (v) { hCur = +v; drawHeads(); });
   function drawHeads() {
     var h = hCur, dk = 8 / h;
-    Lab.matrix($('#s4-X'), X, { rows: words, cols: ['0', '1', '2', '3', '4', '5', '6', '7'], mode: 'div', digits: 1, cls: 'sm', cw: '2.25rem' });
-    $$('#s4-X .mx-cl').forEach(function (c, j) { c.style.boxShadow = 'inset 0 -3px 0 ' + Lab.headColor(Math.floor(j / dk), h); });
+    Lab.matrix($('#s5-X'), X, { rows: words, cols: ['0', '1', '2', '3', '4', '5', '6', '7'], mode: 'div', digits: 1, cls: 'sm', cw: '2.25rem' });
+    $$('#s5-X .mx-cl').forEach(function (c, j) { c.style.boxShadow = 'inset 0 -3px 0 ' + Lab.headColor(Math.floor(j / dk), h); });
     var sub = '';
     for (var g = 0; g < h; g++) {
       var parts = SUB.slice(g * 4 / h, (g + 1) * 4 / h);
       sub += '<div><span class="swatch" style="background:' + Lab.headColor(g, h) + '"></span><b>헤드 ' + (g + 1) + '</b> · 차원 ' + (g * dk) + '–' + ((g + 1) * dk - 1) + '<br><span style="color:var(--ink-2)">' +
         parts.map(function (p) { return p.what + ': ' + p.head; }).join('<br>') + '</span></div>';
     }
-    $('#s4-sub').innerHTML = sub;
-    var maps = headMaps(h), box = $('#s4-maps');
+    $('#s5-sub').innerHTML = sub;
+    var maps = headMaps(h), box = $('#s5-maps');
     box.innerHTML = maps.map(function (_, g) {
       return '<div class="map-cell"><span class="cap" style="color:' + Lab.headColor(g, h) + '">■ 헤드 ' + (g + 1) + (h === 4 ? ' · ' + ['직전 단어', '명사', '같은 단어', '다음 단어'][g] : h === 1 ? ' · 네 부분공간 합산' : ' · 부분공간 ' + (g * 2 + 1) + '+' + (g * 2 + 2)) + '</span><div></div></div>';
     }).join('');
@@ -208,7 +208,7 @@ Lab.section('s4', function () {
         return '<td class="num' + (hh === h ? ' cur' : '') + '">' + fmt(caps[hh][r], 2) + '</td>';
       }).join('') + '</tr>';
     });
-    $('#s4-rel').innerHTML = t + '</tbody><caption>각 관계가 가리키는 칸에 준 가중치의 합(토큰 평균). 1에 가까울수록 그 관계를 정확히 봅니다.</caption>';
+    $('#s5-rel').innerHTML = t + '</tbody><caption>각 관계가 가리키는 칸에 준 가중치의 합(토큰 평균). 1에 가까울수록 그 관계를 정확히 봅니다.</caption>';
   }
   drawHeads();
 });

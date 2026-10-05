@@ -97,7 +97,7 @@ Lab.section('s10', function () {
     $('#s10-params').innerHTML = t;
     var msg = '총 ' + Lab.int(total) + '개 ≈ ' + Lab.kor(total) + '개 · FFN ' + fmt(ffnAll / total * 100, 0) + '%, attention ' + fmt(attAll / total * 100, 0) + '%, 임베딩 ' + fmt(parts[0].v / total * 100, 0) + '%';
     if (d % h !== 0) msg += '\nd_model(' + d + ')이 h(' + h + ')로 나누어떨어지지 않아 헤드를 나눌 수 없습니다. 파라미터 수는 h와 무관하지만 구현은 불가능합니다.';
-    else msg += '\nh = ' + h + ' → d_k = ' + (d / h) + '. h를 바꿔도 합계가 그대로인 것을 확인해 보세요(§4).';
+    else msg += '\nh = ' + h + ' → d_k = ' + (d / h) + '. h를 바꿔도 합계가 그대로인 것을 확인해 보세요(§5).';
     var same = function (k) { var p = PP[k]; return p.d === d && p.dff === dff && p.N === N && p.V === Vv && p.tie === tie; };
     if (same('base')) msg += '\n논문 Table 3 base: 65M. 차이 약 ' + fmt((65e6 - total) / 1e6, 1) + 'M은 실제 어휘 크기 등 구현 세부 차이로 보입니다.';
     if (same('big')) msg += '\n논문 Table 3 big: 213M.';

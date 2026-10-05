@@ -94,6 +94,38 @@ main { min-width: 0; padding-bottom: 120px; }
 .mb-s { font-family: var(--font-mono); font-size: 11px; fill: var(--accent); text-anchor: end; }
 .map-legend { max-width: 70ch; margin: 12px 0 0; padding-left: 1.1em; font-size: 14px; color: var(--ink-2); line-height: 1.7; }
 .map-legend b { color: var(--ink); }
+
+/* 섹션 시작: 구조도에서 지금 보는 부분 */
+.sec-ctx { display: grid; grid-template-columns: 300px minmax(0, 1fr); gap: 14px 22px; align-items: center; padding: 14px 16px; border: 1px solid var(--line); border-radius: 10px; background: var(--surface); }
+.sec-ctx p { margin: 0 0 .6em; font-size: 14.5px; color: var(--ink-2); }
+.sec-ctx p:last-child { margin-bottom: 0; }
+.sec-ctx .ctx-label { font-size: 12.5px; font-weight: 600; letter-spacing: .04em; color: var(--accent); }
+.ctx-map { width: 100%; height: auto; display: block; }
+.ctx-map .mb text { font-family: var(--font-sans); font-size: 12px; fill: var(--ink); text-anchor: middle; }
+.ctx-map .mb.dim { opacity: .45; }
+.ctx-map .mb.here rect { stroke: var(--accent); stroke-width: 2.4; }
+.ctx-map .mb .sm { font-size: 11px; fill: var(--ink-2); }
+.ctx-map .mb .b { font-weight: 600; }
+.ctx-map .mb .sup { font-size: 9px; }
+.ctx-fl { font-family: var(--font-sans); font-size: 11px; font-weight: 600; fill: var(--muted); }
+@media (max-width: 760px) { .sec-ctx { grid-template-columns: minmax(0, 1fr); } .ctx-map { max-width: 340px; } }
+
+/* §2 Query·Key·Value 예시 그림 (Q 파랑 · K 주황 · V 초록) */
+.qkv-fig { margin: 0; }
+.qkv-fig svg { width: 100%; min-width: 560px; height: auto; display: block; }
+.qkv-fig figcaption { font-size: 13.5px; color: var(--muted); margin-top: 8px; max-width: 68ch; }
+.qkv .h { font-size: 11.5px; font-weight: 600; fill: var(--muted); }
+.qkv .w { font-weight: 600; }
+.qkv .big { font-size: 16px; font-weight: 700; fill: var(--c1); }
+.qkv .q-box { fill: color-mix(in oklab, var(--c1) 12%, var(--surface)); stroke: var(--c1); stroke-width: 1.4; }
+.qkv .q-ln path { stroke: var(--c1); fill: none; }
+.qkv .k-box { fill: color-mix(in oklab, var(--c2) 9%, var(--surface)); stroke: color-mix(in oklab, var(--c2) 50%, var(--surface)); stroke-width: 1.2; }
+.qkv .top .k-box { stroke: var(--c2); stroke-width: 2; }
+.qkv .v-box { fill: var(--c3); stroke: var(--c3); stroke-width: 1.2; }
+.qkv .bar-tr { fill: var(--line); }
+.qkv .bar-f { fill: var(--ink-2); }
+.qkv .top .bar-f { fill: var(--amber); }
+.qkv .out-box { fill: var(--surface-2); stroke: var(--line-strong); stroke-width: 1.2; }
 .intro-h { font-size: 13px; font-weight: 600; letter-spacing: .06em; color: var(--muted); margin: 34px 0 12px; }
 .ideas { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
 @media (max-width: 760px) { .ideas { grid-template-columns: minmax(0, 1fr); } }
@@ -289,7 +321,8 @@ label.ctl { cursor: pointer; }
   color: var(--muted);
 }
 .mx-c.hl { outline: 2px solid var(--amber); outline-offset: -1px; position: relative; z-index: 1; }
-.mx-c.dimc { opacity: .3; }
+.mx-c.dimc, .mx-inp.dimc, .mx-rl.dimc { opacity: .3; }
+.mx-rl.on { color: var(--accent); font-weight: 600; }
 .mx-rl, .mx-cl { font-size: 11px; color: var(--muted); white-space: nowrap; display: flex; align-items: center; font-family: var(--font-sans); }
 .mx-rl { justify-content: flex-end; padding-right: 6px; height: var(--ch); }
 .mx-cl { justify-content: center; width: var(--cw); height: 1.5rem; overflow: hidden; text-overflow: ellipsis; }
