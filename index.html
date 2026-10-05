@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>논문 실습실</title>
+<meta name="description" content="논문의 설계 의도를 직접 실험으로 확인하는 인터랙티브 실습 모음">
+<script>try{var t=localStorage.getItem('lab:theme');if(t==='light'||t==='dark')document.documentElement.setAttribute('data-theme',t);}catch(e){}</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Noto+Serif+KR:wght@500;600;700&display=swap" media="print" onload="this.media='all'">
+<link rel="stylesheet" href="assets/site.css?v=3">
+</head>
+<body>
+<header class="topbar">
+  <div class="topbar-inner">
+    <a class="brand" href="index.html"><span class="brand-mark" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></span>논문 실습실</a>
+    <span class="topbar-spacer"></span>
+    <button class="theme-btn" type="button" data-theme-toggle>
+      <svg viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="6.5" fill="none" stroke="currentColor" stroke-width="1.3"/><path d="M8 1.5a6.5 6.5 0 0 1 0 13z" fill="currentColor"/></svg>
+      <span>시스템</span>
+    </button>
+  </div>
+</header>
+
+<main class="hub-main">
+  <section class="hub-intro">
+    <p class="eyebrow">PAPER LAB · 읽고, 예측하고, 돌려 보기</p>
+    <h1>논문 실습실</h1>
+    <p>논문을 읽기만 하면 "왜 이렇게 설계했는지"를 놓치기 쉽습니다. 이곳의 실습은 논문의 절 순서를 그대로 따라가면서, 핵심 수식마다 숫자를 직접 바꿔 보고 결과를 눈으로 확인하도록 만들었습니다.</p>
+    <div class="loop" aria-label="실습 진행 방식">
+      <span class="p">예측해 보기</span><i>→</i><span>실험 돌리기</span><i>→</i><span>결과 확인</span>
+    </div>
+  </section>
+
+  <section aria-labelledby="list-h">
+    <h2 class="hub-h2" id="list-h">실습 목록</h2>
+    <ol class="paper-list" id="paper-list"></ol>
+  </section>
+
+  <section class="hub-note">
+    <h2>새 논문 실습 추가하기</h2>
+    <ol>
+      <li><code>papers/_template/</code> 폴더를 복사해 <code>papers/논문-이름/</code>으로 만듭니다.</li>
+      <li><code>assets/papers.js</code>의 <code>PAPERS</code> 배열에 항목을 추가하고 <code>status</code>를 <code>'ready'</code>로 바꿉니다.</li>
+      <li>페이지 아래쪽의 <code>PAPER_ID</code>를 <code>papers.js</code>의 <code>id</code>와 똑같이 맞춥니다. 섹션마다 <code>data-done</code> 체크박스를 두면 이 페이지에 진행률이 표시됩니다.</li>
+    </ol>
+  </section>
+</main>
+
+<script src="assets/papers.js?v=3"></script>
+<script src="assets/site.js?v=3"></script>
+<script>
+(function () {
+  var list = document.getElementById('paper-list');
+  function esc(s) { return String(s).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); }
+  list.innerHTML = (window.PAPERS || []).map(function (p, i) {
+    var ready = p.status === 'ready';
+    var done = ready ? window.LabStore.getDone(p.id).length : 0;
+    var pct = ready && p.sections ? Math.round(done / p.sections * 100) : 0;
+    var side = ready
+      ? '<span class="status ready">실습 가능</span>' +
+        '<span>' + done + ' / ' + p.sections + ' 섹션 완료</span>' +
+        '<span class="meter" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="' + pct + '"><i style="width:' + pct + '%"></i></span>'
+      : '<span class="status planned">준비 중</span><span>다음 실습 후보</span>';
+    var body =
+      '<div class="paper-idx">' + String(i + 1).padStart(2, '0') + '</div>' +
+      '<div>' +
+        '<p class="paper-meta">' + p.year + ' · ' + esc(p.venue) + ' · arXiv ' + esc(p.arxiv) + '</p>' +
+        '<h3 class="paper-title">' + esc(p.title) + '</h3>' +
+        '<p class="paper-authors">' + esc(p.authors) + '</p>' +
+        '<p class="paper-desc">' + esc(p.summary) + '</p>' +
+        '<div class="tags">' + p.tags.map(function (t) { return '<span class="tag">' + esc(t) + '</span>'; }).join('') + '</div>' +
+      '</div>' +
+      '<div class="paper-side">' + side + '</div>';
+    return ready
+      ? '<li><a class="paper" href="' + esc(p.href) + '">' + body + '</a></li>'
+      : '<li><div class="paper planned">' + body + '</div></li>';
+  }).join('');
+})();
+</script>
+</body>
+</html>
