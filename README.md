@@ -27,6 +27,16 @@ papers/
     js/s1~s11-*.js         섹션별 실험 코드
     js/tiny-transformer.js 브라우저 학습용 순수 JS Transformer (자동미분 포함)
   _template/               새 논문 실습을 시작할 때 복사할 틀
+tools/
+  build-talk.js            index.html → presentation.html(발표용 재배치) 생성
+```
+
+## 발표용 페이지
+
+`papers/attention-is-all-you-need/presentation.html`은 전체 실습 페이지의 내용을 논문 3장 순서(Background → 인코더·디코더 구조 → Attention → FFN → Embeddings·위치 인코딩 → 정리)로 다시 배치한 페이지입니다. `index.html`을 고친 뒤에는 아래 명령으로 다시 만드세요. `presentation.html`을 직접 고치면 다음 생성 때 덮어써집니다.
+
+```bash
+node tools/build-talk.js
 ```
 
 ## 새 논문 추가

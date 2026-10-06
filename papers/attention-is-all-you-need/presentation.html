@@ -1,0 +1,1137 @@
+<!doctype html>
+<!-- 이 파일은 tools/build-talk.js가 index.html에서 생성합니다. 직접 고치지 말고 생성기를 고친 뒤 다시 실행하세요. -->
+
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Attention Is All You Need 발표</title>
+<meta name="description" content="Transformer 논문의 수식을 직접 계산하고, 브라우저에서 작은 Transformer를 학습시키는 실습 페이지">
+<script>try{var t=localStorage.getItem('lab:theme');if(t==='light'||t==='dark')document.documentElement.setAttribute('data-theme',t);}catch(e){}</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Noto+Serif+KR:wght@500;600;700&display=swap" media="print" onload="this.media='all'">
+<link rel="stylesheet" href="../../assets/site.css?v=3">
+<link rel="stylesheet" href="../../assets/lab.css?v=7">
+<script>
+window.MathJax = {
+  tex: { inlineMath: [['\\(', '\\)']], displayMath: [['\\[', '\\]']] },
+  svg: { fontCache: 'global' },
+  options: { enableMenu: false }
+};
+</script>
+<script defer src="https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/tex-svg.js"></script>
+
+<style>
+  /* 발표 페이지 전용 */
+  .part-band { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 14px; margin-top: 56px; padding: 14px 18px; border-radius: 10px; background: var(--accent-soft); color: var(--ink); }
+  .part-n { font-family: var(--font-mono); font-size: 12.5px; font-weight: 600; letter-spacing: .08em; color: var(--accent); }
+  .part-t { font-family: var(--font-serif); font-size: 1.35rem; font-weight: 700; }
+  .part-m { font-size: 13px; color: var(--muted); }
+  .part-i { flex-basis: 100%; font-size: 13.5px; color: var(--ink-2); }
+  .part-band + .sec { border-top: 0; padding-top: 32px; }
+  .sec-head { grid-template-columns: 84px minmax(0, 1fr); }
+  .sec-num { white-space: nowrap; font-size: 2.4rem; }
+  @media (max-width: 1023px) { .sec-head { grid-template-columns: 58px minmax(0, 1fr); } .sec-num { font-size: 1.7rem; } }
+  .toc .toc-part { display: grid; grid-template-columns: 22px minmax(0, 1fr); gap: 6px; padding: 5px 8px 1px; font-size: 13px; color: var(--muted); font-weight: 600; }
+  .toc .toc-part .n { font-family: var(--font-mono); font-size: 12px; }
+  .toc .toc-sub a { padding-left: 22px; grid-template-columns: 28px minmax(0, 1fr) 14px; }
+  @media (max-width: 1023px) { .toc .toc-part { display: none; } .toc .toc-sub a { padding-left: 10px; } }
+</style>
+</head>
+<body>
+<header class="topbar">
+  <div class="topbar-inner">
+    <a class="brand" href="../../index.html"><span class="brand-mark" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></span>논문 실습실</a>
+    <span class="crumb">/ <a href="index.html">Attention Is All You Need</a> / <b>발표</b></span>
+    <span class="topbar-spacer"></span>
+    <button class="theme-btn" type="button" data-theme-toggle>
+      <svg viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="6.5" fill="none" stroke="currentColor" stroke-width="1.3"/><path d="M8 1.5a6.5 6.5 0 0 1 0 13z" fill="currentColor"/></svg>
+      <span>시스템</span>
+    </button>
+  </div>
+</header>
+
+<div class="layout">
+  <nav class="toc" aria-label="목차">
+    <p class="toc-title">발표 순서 <span id="toc-count">0 / 9</span></p>
+    <ol>
+      <li><a href="#top" data-sec="top"><span class="n">0</span><span>들어가며</span><span></span></a></li>
+      <li><a href="#s1" data-sec="s1"><span class="n">1</span><span>Background</span><span class="ck"></span></a></li>
+      <li><a href="#s6" data-sec="s6"><span class="n">2</span><span>인코더·디코더 구조</span><span class="ck"></span></a></li>
+      <li class="toc-part"><span class="n">3</span><span>Attention</span></li>
+      <li class="toc-sub"><a href="#s2" data-sec="s2"><span class="n">3.1</span><span>Scaled Dot-Product</span><span class="ck"></span></a></li>
+      <li class="toc-sub"><a href="#s5" data-sec="s5"><span class="n">3.2</span><span>Multi-Head</span><span class="ck"></span></a></li>
+      <li class="toc-sub"><a href="#s3" data-sec="s3"><span class="n">3.3</span><span>Masking · 세 가지 쓰임</span><span class="ck"></span></a></li>
+      <li><a href="#ffn" data-sec="ffn"><span class="n">4</span><span>Feed-Forward</span><span class="ck"></span></a></li>
+      <li class="toc-part"><span class="n">5</span><span>입력과 출력</span></li>
+      <li class="toc-sub"><a href="#emb" data-sec="emb"><span class="n">5.1</span><span>Embeddings · Softmax</span><span class="ck"></span></a></li>
+      <li class="toc-sub"><a href="#s4" data-sec="s4"><span class="n">5.2</span><span>Positional Encoding</span><span class="ck"></span></a></li>
+      <li><a href="#why" data-sec="why"><span class="n">6</span><span>정리</span><span class="ck"></span></a></li>
+    </ol>
+    <div class="toc-foot"><a href="index.html">전체 실습 페이지</a>로 · 원문 <a href="https://arxiv.org/abs/1706.03762" target="_blank" rel="noopener">arXiv</a></div>
+  </nav>
+
+  <main>
+    <!-- ================================================================ 0. 들어가며 -->
+    
+<header class="hero" id="top">
+      <p class="eyebrow">발표용 · Vaswani et al. · NeurIPS 2017 · arXiv 1706.03762</p>
+      <h1>Attention Is All You Need</h1>
+      <div class="intro-text">
+        <p>단어의 뜻은 주변 단어에 따라 달라집니다. 예를 들어, "배를 타고"의 배는 탈것이고 "배가 아프다"의 배는 신체 부위입니다. 같은 단어라도 함께 쓰인 단어를 봐야 뜻이 정해집니다.</p>
+        <p>언어 모델도 마찬가지입니다. 단어 하나를 처리할 때도 문장 속 다른 단어들을 참고해야 그 단어를 제대로 이해할 수 있습니다.</p>
+        <p>기존의 RNN은 문장을 앞에서부터 한 단어씩 읽습니다. 지금까지 읽은 내용을 <b>hidden state</b>라는 벡터 하나에 담고, 다음 단어를 읽을 때마다 이 벡터를 갱신해 옆으로 넘깁니다.</p>
+        <p>이 방식에는 두 가지 문제가 있습니다. 첫째, 앞 단어를 다 처리해야 다음 단어를 계산할 수 있어서 병렬로 계산할 수 없고, 문장이 길수록 학습이 느려집니다. 둘째, 멀리 떨어진 단어의 정보는 여러 단계를 거치는 동안 다른 정보와 섞이며 희미해집니다.</p>
+        <p>2017년 논문 "Attention Is All You Need"는 이 순환 구조를 아예 없애고, <b>모든 단어 쌍을 한 번에 직접 연결하는 attention만으로</b> 모델을 만들자고 제안했습니다. 이 모델이 Transformer입니다.</p>
+        <p>Transformer에서는 모든 단어가 문장의 다른 모든 단어를 <b>한 번에 직접</b> 참고합니다. 각 단어가 "어떤 단어를 얼마나 참고할지" 점수를 매기고 그 비율로 정보를 모으는데, 이것이 self-attention입니다. 모든 위치를 동시에 계산할 수 있고, 거리와 상관없이 한 번에 닿습니다.</p>
+      </div>
+
+      <figure class="intro-fig">
+        <svg viewBox="0 0 600 176" role="img" aria-label="RNN은 단어를 한 칸씩 전달하고, Transformer는 모든 단어 쌍을 직접 연결한다">
+          <defs><marker id="intro-ah" viewBox="0 0 8 8" refX="7.5" refY="4" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0L8 4L0 8z" class="ia-head"/></marker></defs>
+          <text class="ia-lab" x="0" y="35">RNN</text>
+          <text class="ia-note" x="0" y="52">hidden state 전달</text>
+          <g class="ia-chain">
+            <path d="M210 40H232" marker-end="url(#intro-ah)"/><path d="M320 40H342" marker-end="url(#intro-ah)"/><path d="M430 40H452" marker-end="url(#intro-ah)"/>
+          </g>
+          <g class="ia-h"><text x="221" y="18">h₁</text><text x="331" y="18">h₂</text><text x="441" y="18">h₃</text></g>
+          <g class="ia-box"><rect x="130" y="25" width="80" height="30" rx="6"/><rect x="240" y="25" width="80" height="30" rx="6"/><rect x="350" y="25" width="80" height="30" rx="6"/><rect x="460" y="25" width="80" height="30" rx="6"/></g>
+          <g class="ia-word"><text x="170" y="45">나는</text><text x="280" y="45">커피를</text><text x="390" y="45">정말</text><text x="500" y="45">좋아해</text></g>
+          <text class="ia-lab" x="0" y="145">Transformer</text>
+          <text class="ia-note" x="0" y="162">모든 쌍을 직접</text>
+          <g class="ia-arcs">
+            <path d="M170 128Q225 108 280 128"/><path d="M280 128Q335 108 390 128"/><path d="M390 128Q445 108 500 128"/>
+            <path d="M170 128Q280 88 390 128"/><path d="M280 128Q390 88 500 128"/><path d="M170 128Q335 66 500 128"/>
+          </g>
+          <g class="ia-box ia-on"><rect x="130" y="128" width="80" height="30" rx="6"/><rect x="240" y="128" width="80" height="30" rx="6"/><rect x="350" y="128" width="80" height="30" rx="6"/><rect x="460" y="128" width="80" height="30" rx="6"/></g>
+          <g class="ia-word"><text x="170" y="148">나는</text><text x="280" y="148">커피를</text><text x="390" y="148">정말</text><text x="500" y="148">좋아해</text></g>
+        </svg>
+        <figcaption>위: RNN에서 "나는"의 정보는 hidden state h₁ → h₂ → h₃를 거쳐야 "좋아해"에 닿습니다. 아래: Transformer에서는 모든 단어 쌍이 직접 연결됩니다.</figcaption>
+      </figure>
+
+      <h2 class="intro-h">Transformer 전체 구조 한눈에</h2>
+      <div class="map-intro">
+        <p>번역을 예로 들면, <b>인코더</b>가 입력 문장("I love you")을 읽어 각 단어의 의미를 정리하고, <b>디코더</b>가 그 정리를 참고하면서 번역 문장("나는 너를 사랑해")을 한 단어씩 만듭니다. 인코더와 디코더 모두 attention과 작은 신경망(FFN)으로 된 블록을 여러 층(N개) 쌓은 구조입니다.</p>
+      </div>
+      <div class="scroll-x">
+        <svg class="map-svg" viewBox="0 0 640 336" role="group" aria-label="Transformer 전체 구조: 블록을 누르면 해당 섹션으로 이동">
+          <defs><marker id="map-ah" viewBox="0 0 8 8" refX="7.5" refY="4" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0L8 4L0 8z" class="map-head"/></marker>
+            <marker id="map-ahx" viewBox="0 0 8 8" refX="7.5" refY="4" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0L8 4L0 8z" class="map-head-x"/></marker></defs>
+          <rect class="map-frame" x="60" y="118" width="230" height="122" rx="10"/>
+          <rect class="map-frame" x="350" y="60" width="230" height="180" rx="10"/>
+          <text class="map-fl" x="70" y="134">인코더 × N층</text>
+          <text class="map-fl" x="360" y="76">디코더 × N층</text>
+          <g class="map-wire">
+            <path d="M175 308V295" marker-end="url(#map-ah)"/><path d="M175 262V227" marker-end="url(#map-ah)"/><path d="M175 194V179" marker-end="url(#map-ah)"/>
+            <path d="M465 308V295" marker-end="url(#map-ah)"/><path d="M465 262V233" marker-end="url(#map-ah)"/><path d="M465 200V179" marker-end="url(#map-ah)"/><path d="M465 146V119" marker-end="url(#map-ah)"/><path d="M465 86V45" marker-end="url(#map-ah)"/>
+          </g>
+          <path class="map-x" d="M175 146V104H330V162H364" marker-end="url(#map-ahx)"/>
+          <text class="map-xl" x="252" y="97" text-anchor="middle">인코더가 정리한 정보 (K, V)</text>
+          <text class="map-ql" x="473" y="193">Q</text>
+
+          <a href="#emb"><g class="mb emb"><rect x="75" y="262" width="200" height="32" rx="6"/><text class="mb-t" x="87" y="283">임베딩 + 위치 인코딩</text><text class="mb-s" x="267" y="283">5</text></g></a>
+          <a href="#s2"><g class="mb attn"><rect x="75" y="194" width="200" height="32" rx="6"/><text class="mb-t" x="87" y="215">Self-attention</text><text class="mb-s" x="267" y="215">3.1 · 3.2</text></g></a>
+          <a href="#ffn"><g class="mb ffn"><rect x="75" y="146" width="200" height="32" rx="6"/><text class="mb-t" x="87" y="167">Feed-forward</text><text class="mb-s" x="267" y="167">4</text></g></a>
+
+          <a href="#emb"><g class="mb emb"><rect x="365" y="262" width="200" height="32" rx="6"/><text class="mb-t" x="377" y="283">임베딩 + 위치 인코딩</text><text class="mb-s" x="557" y="283">5</text></g></a>
+          <a href="#s3"><g class="mb attn"><rect x="365" y="200" width="200" height="32" rx="6"/><text class="mb-t" x="377" y="221">Masked self-attention</text><text class="mb-s" x="557" y="221">3.3</text></g></a>
+          <a href="#s6"><g class="mb attn x"><rect x="365" y="146" width="200" height="32" rx="6"/><text class="mb-t" x="377" y="167">Cross-attention</text><text class="mb-s" x="557" y="167">2 · 3.3</text></g></a>
+          <a href="#ffn"><g class="mb ffn"><rect x="365" y="86" width="200" height="32" rx="6"/><text class="mb-t" x="377" y="107">Feed-forward</text><text class="mb-s" x="557" y="107">4</text></g></a>
+          <a href="#emb"><g class="mb out"><rect x="365" y="12" width="200" height="32" rx="6"/><text class="mb-t" x="377" y="33">다음 단어 확률</text><text class="mb-s" x="557" y="33">5.1</text></g></a>
+
+          <text class="map-in" x="175" y="324" text-anchor="middle">입력 문장 · I love you</text>
+          <text class="map-in" x="465" y="324" text-anchor="middle">지금까지 만든 단어 · ‹s› 나는 너를</text>
+        </svg>
+      </div>
+      <ul class="map-legend">
+        <li><b>Self-attention</b>: 문장 안의 단어끼리 서로 참고합니다. 이 페이지의 주인공입니다.</li>
+        <li><b>Masked self-attention</b>: 디코더는 아직 만들지 않은 뒤쪽 단어를 보면 안 되므로, 앞쪽 단어만 참고합니다.</li>
+        <li><b>Cross-attention</b>: 디코더가 인코더의 정리 결과를 참고하는 통로입니다. 번역할 때 원문의 어느 단어를 볼지 정합니다.</li>
+        <li><b>위치 인코딩</b>: attention은 순서를 모르므로, 입력에 위치 정보를 더해 줍니다.</li>
+      </ul>
+      <p class="hint" style="margin-top:6px">블록을 누르면 해당 파트로 이동합니다. 잔차 연결, LayerNorm 같은 세부 구조는 Part 2에서 다룹니다.</p>
+
+      <p class="intro-close">아래에서는 논문 3장의 순서대로 전체 구조를 먼저 보고(Part 2), 부품을 하나씩 살펴봅니다.</p>
+
+      <div class="route">
+        <p><b>발표 순서</b> <a href="#part1">1 Background</a> → <a href="#part2">2 인코더·디코더 구조</a> → <a href="#part3">3 Attention</a> → <a href="#part4">4 FFN</a> → <a href="#part5">5 Embeddings · 위치 인코딩</a> → <a href="#part6">6 정리</a></p>
+        <p class="hint">이 페이지는 발표용으로 다시 배치한 버전입니다. 학습·추론·직접 학습 실습까지 모두 보려면 <a href="index.html">전체 실습 페이지</a>로 가세요.</p>
+      </div>
+    </header>
+
+    <div class="part-band" id="part1">
+      <span class="part-n">PART 1</span>
+      <span class="part-t">Background</span>
+      <span class="part-m">논문 §1·§2 · 약 2분</span>
+      <span class="part-i">왜 RNN을 버렸나: 순차 계산과 긴 경로</span>
+    </div>
+
+<section class="sec" id="s1">
+      <header class="sec-head">
+        <div class="sec-num">1</div>
+        <div>
+          <p class="sec-eyebrow">§1 Introduction · §2 Background</p>
+          <h2>Background: 왜 RNN을 버렸나</h2>
+          <p class="lede">RNN은 단어를 하나씩 순서대로 처리합니다. 이 순차성이 학습 속도와 장거리 의존성, 두 곳에서 발목을 잡습니다.</p>
+        </div>
+      </header>
+      <div class="sec-body">
+        <div class="sec-main">
+          <div class="prose">
+            <p>RNN의 은닉 상태는 <span class="mono">h<sub>t</sub> = f(h<sub>t−1</sub>, x<sub>t</sub>)</span>로 계산됩니다. t번째 상태를 구하려면 t−1번째가 끝나야 하므로, 한 문장 안에서는 계산을 나눠서 동시에 할 수 없습니다. GPU 코어가 수천 개여도 시퀀스 길이만큼 차례를 기다려야 합니다.</p>
+            <p>두 번째 문제는 <b>경로 길이</b>입니다. 문장 앞쪽 단어의 정보가 뒤쪽 단어에 닿으려면 그 사이의 은닉 상태를 모두 거쳐야 하고, 단계마다 정보가 섞이며 희미해집니다. Self-attention은 모든 위치 쌍을 한 번에 직접 연결해 이 경로를 1로 줄입니다. 대신 위치 쌍의 수 n²만큼 연산이 늘어납니다. 이 trade-off를 숫자로 비교한 논문 4장의 표는 Part 6에서 다시 봅니다.</p>
+          </div>
+
+          <div class="lab" id="lab-1-1">
+            <div class="lab-head"><span class="lab-tag">실험 1-1</span><h3>순차 계산과 경로 길이</h3></div>
+            <p class="lab-desc">예문 "The animal didn't cross the street because it was too tired"(그 동물은 너무 피곤해서 길을 건너지 않았다)에서 "it"이 무엇을 가리키는지 알려면 6단어 앞의 "animal"을 봐야 합니다. RNN에서는 "animal"의 정보가 hidden state를 6번 거쳐야 "it"에 도착하고(위 그림의 주황색 화살표), self-attention에서는 한 번에 바로 연결됩니다(아래 그림의 주황색 선). 다른 단어 두 개를 차례로 누르면 경로가 바뀝니다. 재생 버튼은 문장 전체를 계산하는 데 각 방식이 몇 단계를 거치는지 보여 줍니다.</p>
+            <div class="btn-row" style="margin-bottom:14px"><button class="btn primary" id="s1-play" type="button">계산 순서 재생</button><span class="run-status" id="s1-tick"></span></div>
+            <p class="panel-title">RNN · 은닉 상태가 한 줄로 이어짐</p>
+            <div class="scroll-x"><svg id="s1-rnn" class="dg" viewBox="0 0 720 150" style="min-width:620px;width:100%"></svg></div>
+            <p class="readout" id="s1-rnn-read"></p>
+            <p class="panel-title" style="margin-top:18px">Self-Attention · 모든 위치가 직접 연결됨</p>
+            <div class="scroll-x"><svg id="s1-att" class="dg" viewBox="0 0 720 150" style="min-width:620px;width:100%"></svg></div>
+            <p class="readout" id="s1-att-read"></p>
+          </div>
+
+          
+        </div>
+
+        <aside class="paper-ref">
+          <div class="ref-label">원문 대조 <a href="https://arxiv.org/abs/1706.03762" target="_blank" rel="noopener">arXiv ↗</a></div>
+          <p class="ref-sec">§1 Introduction</p>
+          <p>순환 모델은 위치 순서대로 계산하므로 한 예제 안에서 병렬화가 불가능하고, 시퀀스가 길면 메모리 제약 때문에 배치도 키우기 어렵다고 지적합니다.</p>
+          </aside>
+      </div>
+      <footer class="sec-foot">
+        <label class="done-check"><input type="checkbox" data-done="s1"> 이 섹션을 이해했어요</label>
+        <a class="next" href="#s6">다음: 인코더·디코더 구조 →</a>
+      </footer>
+    </section>
+
+    <div class="part-band" id="part2">
+      <span class="part-n">PART 2</span>
+      <span class="part-t">인코더·디코더 구조</span>
+      <span class="part-m">논문 §3.1 · 약 1.5분</span>
+      <span class="part-i">전체 그림 먼저: 인코더는 읽고, 디코더는 인코더를 참고하며 한 단어씩 만든다</span>
+    </div>
+
+<section class="sec" id="s6">
+      <header class="sec-head">
+        <div class="sec-num">2</div>
+        <div>
+          <p class="sec-eyebrow">§3.1 Encoder and Decoder Stacks · Figure 1</p>
+          <h2>인코더·디코더 구조</h2>
+          <p class="lede">논문 3장처럼 전체 구조부터 봅니다. 각 부품은 Part 3부터 하나씩 자세히 살펴봅니다. 블록을 누르면 그 연산이 펼쳐집니다.</p>
+        </div>
+      </header>
+      <div class="sec-body wide">
+        <div class="sec-main">
+          <div class="prose">
+            <p>인코더 층은 [self-attention → feed-forward] 두 서브레이어, 디코더 층은 [masked self-attention → cross-attention → feed-forward] 세 서브레이어로 이루어집니다. 서브레이어마다 잔차 연결(residual)과 LayerNorm이 붙고, 이 층을 각각 N = 6번 쌓습니다.</p>
+          </div>
+
+          <div class="predict">
+            <div class="predict-label">예측해 보기 <span class="steps">예측 → 실험 2-1 → 확인</span></div>
+            <p class="predict-q">디코더의 두 번째 서브레이어(cross-attention)에서 Query, Key, Value는 각각 어디서 올까요?</p>
+            <div class="predict-opts">
+              <button class="predict-opt">Q는 인코더 출력, K·V는 디코더</button>
+              <button class="predict-opt" data-correct>Q는 디코더(바로 아래 서브레이어), K·V는 인코더 최종 출력</button>
+              <button class="predict-opt">Q·K·V 모두 인코더 출력</button>
+            </div>
+            <div class="predict-foot"><button class="btn predict-check" type="button" disabled>결과 확인</button><span class="predict-status">보기를 하나 고르세요.</span></div>
+            <div class="predict-reveal" hidden>
+              <p>디코더는 "지금 무엇을 번역할 차례인지"를 Query로 묻고, 인코더가 만든 소스 문장 표현(memory)에서 Key로 찾아 Value를 가져옵니다. 그래서 cross-attention 행렬은 (타깃 길이 × 소스 길이) 모양의 직사각형이고, 번역에서 단어 정렬(alignment) 역할을 합니다.</p>
+              <p>인코더 출력은 마지막 층의 것 하나가 디코더 N개 층 모두에 똑같이 들어갑니다. 전체 실습 §9에서 학습시킨 모델의 cross-attention이 바로 이 행렬입니다.</p>
+            </div>
+          </div>
+
+          <div class="lab" id="lab-6-1">
+            <div class="lab-head"><span class="lab-tag">실험 2-1</span><h3>Figure 1 조립도</h3></div>
+            <p class="lab-desc">블록을 누르면 오른쪽(좁은 화면에서는 아래)에 연산이 펼쳐집니다. 재생 버튼은 번역 한 번이 그림을 어떤 순서로 지나가는지 보여 줍니다. 주황 점선이 지금 흐르는 데이터입니다.</p>
+            <div class="btn-row" style="margin-bottom:10px"><button class="btn primary" id="s6-play" type="button">데이터 흐름 재생</button><button class="btn" id="s6-stop" type="button" hidden>정지</button></div>
+            <div class="fig1-wrap">
+              <div>
+                <div class="scroll-x"><svg id="s6-fig" class="fig1" viewBox="0 0 760 712" style="min-width:520px" role="group" aria-label="Transformer 구조도"></svg></div>
+                <p class="fig1-caption" id="s6-cap">블록을 눌러 보세요.</p>
+              </div>
+              <div class="detail" id="s6-detail"></div>
+            </div>
+          </div>
+        </div>
+
+        <aside class="paper-ref">
+          <div class="ref-label">원문 대조 <a href="https://arxiv.org/abs/1706.03762" target="_blank" rel="noopener">arXiv ↗</a></div>
+          <p class="ref-sec">§3.1 Encoder and Decoder Stacks</p>
+          <div class="eq">\[\mathrm{LayerNorm}(x+\mathrm{Sublayer}(x))\]</div>
+          <p>인코더·디코더 모두 같은 층 N = 6개를 쌓습니다. 모든 서브레이어와 임베딩의 출력 차원은 d<sub>model</sub> = 512로 같아서 잔차 연결이 가능합니다. 디코더의 세 번째(그림에선 가운데) 서브레이어는 인코더 스택의 출력에 attention합니다.</p>
+          <p class="ref-sec">§3.2.3 attention의 세 가지 쓰임</p>
+          <ul>
+            <li>encoder–decoder attention: Q는 이전 디코더 층, K·V는 인코더 출력</li>
+            <li>인코더 self-attention: Q·K·V 모두 이전 인코더 층</li>
+            <li>디코더 self-attention: 자기 위치까지만 보도록 마스킹</li>
+          </ul>
+          <p class="ref-sec">§3.3 Position-wise FFN</p>
+          <div class="eq">\[\mathrm{FFN}(x)=\max(0,\,xW_1+b_1)\,W_2+b_2\]</div>
+          <p>위치마다 같은 가중치를 따로 적용합니다(커널 크기 1인 합성곱 두 개와 같음). d<sub>ff</sub> = 2048.</p>
+          <p class="ref-sec">§3.4 Embeddings and Softmax</p>
+          <p>두 임베딩 층과 softmax 직전 linear 층이 같은 가중치 행렬을 공유하고, 임베딩에는 √d<sub>model</sub>을 곱합니다.</p>
+          <p class="ref-sec">§5.4 Residual Dropout</p>
+          <p>각 서브레이어 출력이 잔차에 더해지기 전, 그리고 임베딩+PE 합에 dropout(P<sub>drop</sub> = 0.1)을 적용합니다.</p>
+        </aside>
+      </div>
+      <footer class="sec-foot">
+        <label class="done-check"><input type="checkbox" data-done="s6"> 이 섹션을 이해했어요</label>
+        <a class="next" href="#s2">다음: Attention →</a>
+      </footer>
+    </section>
+
+    <div class="part-band" id="part3">
+      <span class="part-n">PART 3</span>
+      <span class="part-t">Attention</span>
+      <span class="part-m">논문 §3.2 · 약 4분</span>
+      <span class="part-i">3.1 Scaled Dot-Product → 3.2 Multi-Head → 3.3 Masking과 attention의 세 가지 쓰임</span>
+    </div>
+
+<section class="sec" id="s2">
+      <header class="sec-head">
+        <div class="sec-num">3.1</div>
+        <div>
+          <p class="sec-eyebrow">§3.2.1 · Eq. (1) · 각주 4</p>
+          <h2>Scaled Dot-Product Attention</h2>
+          <p class="lede">Transformer의 심장입니다. Query와 Key의 내적으로 "어디를 볼지" 정하고, 그 비율대로 Value를 섞습니다.</p>
+        </div>
+      </header>
+      <div class="sec-body">
+        <div class="sec-main">
+          <div class="sec-ctx">
+            <svg class="ctx-map" viewBox="0 0 300 218" role="img" aria-label="Transformer 구조에서 attention 블록 세 곳(인코더 self-attention, 디코더 masked self-attention, cross-attention)이 강조된 그림">
+              <defs><marker id="ctx-ah" viewBox="0 0 8 8" refX="7.5" refY="4" markerWidth="6" markerHeight="6" orient="auto"><path d="M0 0L8 4L0 8z" class="map-head"/></marker>
+                <marker id="ctx-ahx" viewBox="0 0 8 8" refX="7.5" refY="4" markerWidth="6" markerHeight="6" orient="auto"><path d="M0 0L8 4L0 8z" class="map-head-x"/></marker></defs>
+              <rect class="map-frame" x="8" y="40" width="132" height="110" rx="8"/>
+              <rect class="map-frame" x="160" y="40" width="132" height="134" rx="8"/>
+              <text class="ctx-fl" x="16" y="55">인코더 × N</text>
+              <text class="ctx-fl" x="168" y="55">디코더 × N</text>
+              <g class="map-wire">
+                <path d="M74 190V140" marker-end="url(#ctx-ah)"/><path d="M74 114V88" marker-end="url(#ctx-ah)"/>
+                <path d="M226 190V166" marker-end="url(#ctx-ah)"/><path d="M226 140V126" marker-end="url(#ctx-ah)"/><path d="M226 100V88" marker-end="url(#ctx-ah)"/>
+              </g>
+              <path class="map-x" d="M74 62V26H150V112H164" marker-end="url(#ctx-ahx)"/>
+              <text class="map-xl" x="112" y="20" text-anchor="middle">K, V</text>
+              <g class="mb ffn dim"><rect x="14" y="62" width="120" height="24" rx="5"/><text x="74" y="78">FFN</text></g>
+              <g class="mb attn here"><rect x="14" y="114" width="120" height="24" rx="5"/><text x="74" y="130">Self-attention</text></g>
+              <g class="mb emb dim"><rect x="14" y="190" width="120" height="24" rx="5"/><text x="74" y="206">임베딩 + 위치</text></g>
+              <g class="mb ffn dim"><rect x="166" y="62" width="120" height="24" rx="5"/><text x="226" y="78">FFN</text></g>
+              <g class="mb attn here"><rect x="166" y="100" width="120" height="24" rx="5"/><text x="226" y="116">Cross-attention</text></g>
+              <g class="mb attn here"><rect x="166" y="140" width="120" height="24" rx="5"/><text x="226" y="156">Masked self-attn</text></g>
+              <g class="mb emb dim"><rect x="166" y="190" width="120" height="24" rx="5"/><text x="226" y="206">임베딩 + 위치</text></g>
+            </svg>
+            <div>
+              <p class="ctx-label">지금 보는 부분</p>
+              <p>파란 테두리의 세 블록은 모두 이 섹션에서 다루는 계산 하나를 씁니다. 인코더 self-attention, 디코더 masked self-attention, cross-attention의 차이는 Q·K·V를 어디서 가져오는지(<a href="#s6">2</a>)와 미래 단어를 가리는 마스크(<a href="#s3">3.3</a>)뿐입니다.</p>
+              <p>실제 블록은 이 계산을 여러 헤드로 나눠 동시에 돌립니다(<a href="#s5">3.2</a>). 여기서는 그 안쪽, 헤드 하나가 하는 일을 봅니다.</p>
+            </div>
+          </div>
+
+          <div class="prose">
+            <h3>왜 이런 모양인가</h3>
+            <p>1에서 본 RNN의 문제는 앞 단어의 정보가 hidden state를 여러 번 거쳐야 뒤 단어에 닿는다는 점이었습니다. "it"이 6단어 앞의 "animal"을 참고하려면 6단계를 거쳐야 했습니다. Transformer는 이 중간 단계를 없애고, 각 단어가 문장 안의 다른 단어를 바로 들여다보게 합니다.</p>
+            <p>그러려면 단어마다 두 가지를 정해야 합니다. 첫째, 다른 단어 각각을 <b>얼마나 참고할지</b>(가중치)입니다. "it"이라면 "animal"은 많이, "the"는 조금 참고해야 합니다. 둘째, 그 비율대로 다른 단어들의 정보를 <b>섞어서</b> 자기 표현을 새로 만드는 것입니다. 섞는 쪽은 가중 평균이면 되니, 이 섹션의 핵심은 가중치를 어떻게 정하느냐입니다.</p>
+            <p>가중치를 정하기 위해 각 단어(토큰)는 세 벡터를 만듭니다. <b>Query</b>는 "내가 찾는 것", <b>Key</b>는 "내가 가진 정보의 색인", <b>Value</b>는 "실제로 전달할 내용"입니다. 토큰 i의 query와 토큰 j의 key의 내적이 점수 s<sub>ij</sub>가 되고, 행마다 softmax를 취하면 합이 1인 가중치가 됩니다. 이 가중치로 value들을 섞은 것이 토큰 i의 새 표현입니다. 검색에 비유하면 query는 검색어, key는 책 제목, value는 책 내용입니다. 다만 제목이 정확히 맞는 책 한 권을 꺼내는 대신, 검색어와 비슷한 정도에 따라 모든 책의 내용을 조금씩 섞어 옵니다.</p>
+          </div>
+
+          <figure class="qkv-fig">
+            <div class="scroll-x">
+              <svg class="dg qkv" viewBox="0 0 640 310" role="img" aria-label="it의 query를 각 단어의 key와 비교해 점수와 가중치를 구하고, 가중치대로 value를 섞어 it의 새 표현을 만드는 과정">
+                <defs><marker id="qkv-ah" viewBox="0 0 8 8" refX="7.5" refY="4" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0L8 4L0 8z" class="arrowhead"/></marker></defs>
+                <text class="h" x="8" y="16">Query · 내가 찾는 것</text>
+                <text class="h" x="178" y="16">Key · 각 단어의 색인</text>
+                <text class="h" x="355" y="16" text-anchor="middle">점수 q·k</text>
+                <text class="h" x="392" y="16">가중치 (softmax)</text>
+                <text class="h" x="528" y="16">Value · 전달할 내용</text>
+
+                <g class="q-ln">
+                  <path d="M150 135L178 47" style="stroke-width:1;opacity:.34"/>
+                  <path d="M150 135L178 91" style="stroke-width:4.2;opacity:1"/>
+                  <path d="M150 135L178 135" style="stroke-width:1.05;opacity:.35"/>
+                  <path d="M150 135L178 179" style="stroke-width:1.55;opacity:.45"/>
+                  <path d="M150 135L178 223" style="stroke-width:1.15;opacity:.37"/>
+                </g>
+                <rect class="q-box" x="8" y="82" width="142" height="106" rx="8"/>
+                <text class="big" x="20" y="110">"it"</text>
+                <text x="20" y="138">앞에 나온 명사,</text>
+                <text x="20" y="158">피곤할 수 있는 것</text>
+
+                <g>
+                  <rect class="k-box" x="178" y="30" width="140" height="34" rx="6"/><text class="w" x="190" y="51">The</text><text class="t-muted" x="306" y="51" text-anchor="end">관사</text>
+                  <text class="t-mono" x="355" y="51" text-anchor="middle">0.2</text>
+                  <rect class="bar-tr" x="392" y="42" width="90" height="10" rx="2"/><rect class="bar-f" x="392" y="42" width="3.6" height="10" rx="2"/><text class="t-mono" x="488" y="51">4%</text>
+                  <rect class="v-box" x="528" y="30" width="104" height="34" rx="6" style="fill-opacity:.1"/><text x="580" y="51" text-anchor="middle">V(The)</text>
+                </g>
+                <g class="top">
+                  <rect class="k-box" x="178" y="74" width="140" height="34" rx="6"/><text class="w" x="190" y="95">animal</text><text class="t-muted" x="306" y="95" text-anchor="end">명사 · 생물</text>
+                  <text class="t-mono w" x="355" y="95" text-anchor="middle">3.1</text>
+                  <rect class="bar-tr" x="392" y="86" width="90" height="10" rx="2"/><rect class="bar-f" x="392" y="86" width="62.1" height="10" rx="2"/><text class="t-mono w" x="488" y="95">69%</text>
+                  <rect class="v-box" x="528" y="74" width="104" height="34" rx="6" style="fill-opacity:.36"/><text class="w" x="580" y="95" text-anchor="middle">V(animal)</text>
+                </g>
+                <g>
+                  <rect class="k-box" x="178" y="118" width="140" height="34" rx="6"/><text class="w" x="190" y="139">cross</text><text class="t-muted" x="306" y="139" text-anchor="end">동사</text>
+                  <text class="t-mono" x="355" y="139" text-anchor="middle">0.4</text>
+                  <rect class="bar-tr" x="392" y="130" width="90" height="10" rx="2"/><rect class="bar-f" x="392" y="130" width="4.5" height="10" rx="2"/><text class="t-mono" x="488" y="139">5%</text>
+                  <rect class="v-box" x="528" y="118" width="104" height="34" rx="6" style="fill-opacity:.1"/><text x="580" y="139" text-anchor="middle">V(cross)</text>
+                </g>
+                <g>
+                  <rect class="k-box" x="178" y="162" width="140" height="34" rx="6"/><text class="w" x="190" y="183">street</text><text class="t-muted" x="306" y="183" text-anchor="end">명사 · 장소</text>
+                  <text class="t-mono" x="355" y="183" text-anchor="middle">1.6</text>
+                  <rect class="bar-tr" x="392" y="174" width="90" height="10" rx="2"/><rect class="bar-f" x="392" y="174" width="13.5" height="10" rx="2"/><text class="t-mono" x="488" y="183">15%</text>
+                  <rect class="v-box" x="528" y="162" width="104" height="34" rx="6" style="fill-opacity:.14"/><text x="580" y="183" text-anchor="middle">V(street)</text>
+                </g>
+                <g>
+                  <rect class="k-box" x="178" y="206" width="140" height="34" rx="6"/><text class="w" x="190" y="227">it</text><text class="t-muted" x="306" y="227" text-anchor="end">대명사</text>
+                  <text class="t-mono" x="355" y="227" text-anchor="middle">0.8</text>
+                  <rect class="bar-tr" x="392" y="218" width="90" height="10" rx="2"/><rect class="bar-f" x="392" y="218" width="6.3" height="10" rx="2"/><text class="t-mono" x="488" y="227">7%</text>
+                  <rect class="v-box" x="528" y="206" width="104" height="34" rx="6" style="fill-opacity:.11"/><text x="580" y="227" text-anchor="middle">V(it)</text>
+                </g>
+
+                <path class="ln" d="M580 242V256" marker-end="url(#qkv-ah)"/>
+                <rect class="out-box" x="178" y="258" width="454" height="46" rx="8"/>
+                <text class="h" x="8" y="285">출력 · 가중 평균</text>
+                <text class="t-mono" x="190" y="277">"it"의 새 표현 = 0.69·V(animal) + 0.15·V(street) + …</text>
+                <text class="t-muted" x="190" y="295">animal의 정보가 가장 많이 섞여, it이 animal을 가리킨다는 사실이 담깁니다.</text>
+              </svg>
+            </div>
+            <figcaption>"it"의 query를 모든 단어의 key와 비교해 점수를 내고, softmax로 합이 1인 가중치를 만든 뒤 그 비율대로 value를 섞습니다. animal은 "명사"와 "생물" 두 조건이 모두 맞아 점수가 가장 높고, street는 명사만 맞아 그다음입니다. 실제 Q·K·V는 숫자 벡터이고, 그림의 설명과 숫자는 이해를 돕기 위해 정한 예시입니다.</figcaption>
+          </figure>
+
+          <div class="prose">
+            <p>토큰 벡터 x 하나로 x<sub>i</sub>·x<sub>j</sub>를 점수로 쓰면 안 될까요? 그러면 점수가 대칭(s<sub>ij</sub> = s<sub>ji</sub>)이 되어 "it이 animal을 찾는 정도"와 "animal이 it을 찾는 정도"가 같아지고, 자기 자신과의 내적이 대개 가장 커서 각 토큰이 주로 자기만 보게 됩니다. 찾는 기준(Q), 찾아지는 기준(K), 전달할 내용(V)을 나눠야 이런 비대칭 관계를 표현할 수 있습니다. 실제 모델에서 세 벡터는 같은 입력 X에 서로 다른 학습 행렬을 곱해 만듭니다(Q = XW<sup>Q</sup>, K = XW<sup>K</sup>, V = XW<sup>V</sup>). 이 섹션에서는 계산에 집중하도록 Q·K·V 값을 직접 넣고, 투영 행렬은 3.2에서 다룹니다.</p>
+            <p>점수로 내적을 쓰는 이유는 빠르기 때문입니다. 여러 query를 행렬로 묶으면 모든 쌍의 점수가 QKᵀ 한 번으로 나오고, 전체 과정이 행렬 곱 두 번과 softmax 한 번으로 끝납니다. GPU가 가장 잘하는 연산입니다. softmax는 점수를 0 이상이고 합이 1인 가중치로 바꿉니다. 점수가 가장 높은 하나만 고르면(argmax) 미분할 수 없어 학습이 안 되므로, 높은 점수에 많이 주되 부드럽게 나누는 softmax를 씁니다. 마지막으로 √d<sub>k</sub>로 나누는 이유는 실험 3-2에서 확인합니다.</p>
+          </div>
+
+          <div class="lab" id="lab-2-1">
+            <div class="lab-head"><span class="lab-tag">실험 3-1</span><h3>단계별 계산기: QKᵀ → 스케일 → 마스크 → softmax → ×V</h3></div>
+            <p class="lab-desc">위 그림의 계산을 문장 "나는 커피를 정말 좋아해"의 네 단어에 한꺼번에 적용합니다. 행렬의 <b>한 행이 단어 하나</b>이고, 그림에서 "it" 하나를 따라간 것처럼 <b>따라갈 단어</b>를 고르면 그 행만 밝게 표시됩니다. Q·K·V는 d<sub>k</sub> = 4인 작은 예시 값이라 숫자 자체에 뜻은 없습니다. 칸의 숫자를 고치면 모든 단계가 바로 다시 계산되고, 결과 칸에 마우스를 올리면 그 값의 계산식을 보여 줍니다.</p>
+            <div class="controls">
+              <span class="ctl">따라갈 단어 <span id="s2-focus"></span></span>
+            </div>
+            <div class="controls">
+              <div class="btn-row" id="s2-presets">
+                <button class="btn small" type="button" data-p="base">기본 예시</button>
+                <button class="btn small" type="button" data-p="sharp">Q를 3배로</button>
+                <button class="btn small" type="button" data-p="same">모든 Key가 같음</button>
+                <button class="btn small" type="button" data-p="ident">V = 단위행렬</button>
+                <button class="btn small" type="button" data-p="rand">무작위</button>
+              </div>
+              <label class="ctl"><input type="checkbox" id="s2-scale" checked> <span>√d<sub>k</sub>로 나누기 (실험 3-2)</span></label>
+              <label class="ctl"><input type="checkbox" id="s2-mask"> causal mask (3.3)</label>
+            </div>
+            <p class="step-note" id="s2-preset-note"></p>
+            <div class="grid-3">
+              <div class="panel"><p class="panel-title">Q <span class="shape">4 × d<sub>k</sub></span></p><div class="scroll-x" id="s2-Q"></div></div>
+              <div class="panel"><p class="panel-title">K <span class="shape">4 × d<sub>k</sub></span></p><div class="scroll-x" id="s2-K"></div></div>
+              <div class="panel"><p class="panel-title">V <span class="shape">4 × d<sub>v</sub></span></p><div class="scroll-x" id="s2-V"></div></div>
+            </div>
+            <div class="lab-part">
+              <div class="stepper" id="s2-steps" role="group" aria-label="계산 단계"></div>
+              <p class="step-note" id="s2-note"></p>
+              <div class="grid-3" id="s2-panels">
+                <div class="panel" data-step="1"><p class="panel-title">① S = QKᵀ</p><div class="scroll-x" id="s2-S"></div></div>
+                <div class="panel" data-step="2"><p class="panel-title">② S / √d<sub>k</sub></p><div class="scroll-x" id="s2-Ss"></div></div>
+                <div class="panel" data-step="3"><p class="panel-title">③ + mask</p><div class="scroll-x" id="s2-Sm"></div></div>
+                <div class="panel" data-step="4"><p class="panel-title">④ A = softmax (행마다)</p><div class="scroll-x" id="s2-A"></div></div>
+                <div class="panel" data-step="5"><p class="panel-title">⑤ 출력 = A·V</p><div class="scroll-x" id="s2-O"></div></div>
+                <div class="panel" style="grid-column:1 / -1"><p class="panel-title">계산 내역</p><div class="readout" id="s2-read" style="min-height:7.5em"></div></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="predict">
+            <div class="predict-label">예측해 보기 <span class="steps">예측 → 실험 3-2 → 확인</span></div>
+            <p class="predict-q">d<sub>k</sub> = 512로 키우고 √d<sub>k</sub>로 나누지 않으면 softmax 출력은 어떻게 될까요? (q, k의 각 성분은 평균 0, 분산 1)</p>
+            <div class="predict-opts">
+              <button class="predict-opt">점수가 커지지만 softmax가 정규화하므로 모양은 비슷하다</button>
+              <button class="predict-opt" data-correct>한 key에 거의 1이 몰리고(포화), 기울기가 0에 가까워진다</button>
+              <button class="predict-opt">모든 key에 고르게 퍼진다</button>
+            </div>
+            <div class="predict-foot"><button class="btn predict-check" type="button" disabled>결과 확인</button><span class="predict-status">보기를 하나 고르세요.</span></div>
+            <div class="predict-reveal" hidden>
+              <p>q·k는 d<sub>k</sub>개 항의 합이라 분산이 d<sub>k</sub>입니다. d<sub>k</sub> = 512면 표준편차가 약 22.6이어서 key들 사이 점수 차이가 수십이 됩니다. e<sup>30</sup>/e<sup>0</sup> ≈ 10<sup>13</sup>이니 softmax는 사실상 원-핫이 됩니다.</p>
+              <p>문제는 원-핫 근처에서 softmax의 야코비안 diag(p) − ppᵀ가 거의 0이라는 점입니다. 학습 신호가 Query·Key로 전달되지 않습니다. √d<sub>k</sub>로 나누면 분산이 다시 1이 되어 d<sub>k</sub>와 상관없이 같은 분포가 유지됩니다. 아래 그래프에서 "스케일링 없음" 곡선만 d<sub>k</sub>가 커질수록 무너지는 것을 확인하세요.</p>
+            </div>
+          </div>
+
+          <div class="lab" id="lab-2-2">
+            <div class="lab-head"><span class="lab-tag">실험 3-2</span><h3>√d<sub>k</sub>로 나누는 이유: softmax 포화</h3></div>
+            <p class="lab-desc">q와 key 8개를 표준정규분포에서 뽑아 점수 q·k<sub>j</sub>를 만듭니다. d<sub>k</sub>를 키우면서 두 softmax를 비교하세요. 주황 막대가 가장 큰 가중치입니다.</p>
+            <div class="controls">
+              <label class="ctl"><span>d<sub>k</sub></span> <input type="range" id="s2-dk" min="0" max="10" value="6"><output id="s2-dk-out"></output></label>
+              <button class="btn small" id="s2-resample" type="button">새 샘플 뽑기</button>
+            </div>
+            <div class="grid-2">
+              <div class="panel"><p class="panel-title">스케일링 없음: softmax(q·k)</p><div id="s2-bars-raw"></div><div class="stats" id="s2-st-raw"></div></div>
+              <div class="panel"><p class="panel-title">논문 방식: softmax(q·k / √d<sub>k</sub>)</p><div id="s2-bars-sc"></div><div class="stats" id="s2-st-sc"></div></div>
+            </div>
+            <div class="lab-part">
+              <h4>d<sub>k</sub>에 따른 평균 (d<sub>k</sub>마다 샘플 300개)</h4>
+              <div class="grid-2">
+                <div id="s2-mc-max"></div>
+                <div id="s2-mc-grad"></div>
+              </div>
+              <p class="note">기울기 크기는 softmax의 야코비안 ‖diag(p) − ppᵀ‖<sub>F</sub>입니다. 이 값이 0에 가까우면 점수(즉 Q, K)로 전달되는 학습 신호가 사라집니다.</p>
+            </div>
+          </div>
+        </div>
+
+        <aside class="paper-ref">
+          <div class="ref-label">원문 대조 <a href="https://arxiv.org/abs/1706.03762" target="_blank" rel="noopener">arXiv ↗</a></div>
+          <p class="ref-sec">§3.2.1 · Eq. (1)</p>
+          <div class="eq">\[\mathrm{Attention}(Q,K,V)=\mathrm{softmax}\!\left(\frac{QK^{\top}}{\sqrt{d_k}}\right)V\]</div>
+          <p>Query·Key의 차원은 d<sub>k</sub>, Value의 차원은 d<sub>v</sub>입니다. 여러 query를 행렬 Q로 묶어 한꺼번에 계산합니다.</p>
+          <p class="ref-sec">각주 4</p>
+          <div class="eq">\[q\cdot k=\sum_{i=1}^{d_k}q_i k_i,\qquad \mathrm{Var}(q\cdot k)=d_k\]</div>
+          <p>q, k의 성분이 평균 0·분산 1인 독립 변수라면 내적의 분산은 d<sub>k</sub>입니다. 저자들은 d<sub>k</sub>가 크면 내적이 커져 softmax가 기울기가 아주 작은 영역으로 밀려난다고 보고 1/√d<sub>k</sub>로 스케일했습니다.</p>
+          <p class="ref-sec">덧셈(additive) attention과의 비교</p>
+          <p>d<sub>k</sub>가 작으면 두 방식의 성능이 비슷하지만, 스케일링 없는 내적은 d<sub>k</sub>가 크면 additive attention보다 나빴다고 적습니다. 내적 방식은 행렬 곱 하나로 끝나 훨씬 빠르고 메모리도 적게 씁니다.</p>
+        </aside>
+      </div>
+      <footer class="sec-foot">
+        <label class="done-check"><input type="checkbox" data-done="s2"> 이 섹션을 이해했어요</label>
+        <a class="next" href="#s5">다음: Multi-Head Attention →</a>
+      </footer>
+    </section>
+<section class="sec" id="s5">
+      <header class="sec-head">
+        <div class="sec-num">3.2</div>
+        <div>
+          <p class="sec-eyebrow">§3.2.2 · Figure 2 (오른쪽) · Table 3 (A)</p>
+          <h2>Multi-Head Attention</h2>
+          <p class="lede">512차원으로 attention을 한 번 하는 대신, 64차원씩 8개 헤드로 나눠 서로 다른 관계를 동시에 봅니다.</p>
+        </div>
+      </header>
+      <div class="sec-body">
+        <div class="sec-main">
+          <div class="sec-ctx">
+            <svg class="ctx-map" viewBox="0 0 300 218" role="img" aria-label="Multi-Head Attention 블록 내부: 입력 X를 헤드마다 Q·K·V로 투영해 3.1 계산을 하고, 결과를 이어 붙인 뒤 W^O로 섞는 구조">
+              <defs><marker id="ctx5-ah" viewBox="0 0 8 8" refX="7.5" refY="4" markerWidth="6" markerHeight="6" orient="auto"><path d="M0 0L8 4L0 8z" class="map-head"/></marker></defs>
+              <text class="ctx-fl" x="10" y="18">attention 블록 하나를 열어 보면</text>
+              <g class="map-wire">
+                <path d="M48 196V174" marker-end="url(#ctx5-ah)"/><path d="M132 196V174" marker-end="url(#ctx5-ah)"/><path d="M252 196V174" marker-end="url(#ctx5-ah)"/>
+                <path d="M48 112V98" marker-end="url(#ctx5-ah)"/><path d="M132 112V98" marker-end="url(#ctx5-ah)"/><path d="M252 112V98" marker-end="url(#ctx5-ah)"/>
+                <path d="M150 76V64" marker-end="url(#ctx5-ah)"/>
+              </g>
+              <g class="mb"><rect x="10" y="30" width="280" height="32" rx="5"/><text x="150" y="51">W<tspan class="sup" dy="-4">O</tspan><tspan dy="4">로 섞기 → 출력 (512)</tspan></text></g>
+              <g class="mb"><rect x="10" y="76" width="280" height="20" rx="5"/><text class="sm" x="150" y="90">이어 붙이기 (Concat) · 64 × 8 = 512</text></g>
+              <g class="mb attn here"><rect x="10" y="112" width="76" height="60" rx="5"/><text class="b" x="48" y="130">헤드 1</text><text class="sm" x="48" y="148">Q·K·V 투영</text><text class="sm" x="48" y="164">→ 3.1 계산</text></g>
+              <g class="mb attn here"><rect x="94" y="112" width="76" height="60" rx="5"/><text class="b" x="132" y="130">헤드 2</text><text class="sm" x="132" y="148">Q·K·V 투영</text><text class="sm" x="132" y="164">→ 3.1 계산</text></g>
+              <text class="ctx-fl" x="192" y="146" text-anchor="middle">…</text>
+              <g class="mb attn here"><rect x="214" y="112" width="76" height="60" rx="5"/><text class="b" x="252" y="130">헤드 8</text><text class="sm" x="252" y="148">Q·K·V 투영</text><text class="sm" x="252" y="164">→ 3.1 계산</text></g>
+              <g class="mb emb"><rect x="10" y="196" width="280" height="20" rx="5"/><text class="sm" x="150" y="210">입력 X · 단어마다 512차원</text></g>
+            </svg>
+            <div>
+              <p class="ctx-label">지금 보는 부분</p>
+              <p>구조도의 attention 블록 세 곳(인코더 self-attention, 디코더 masked self-attention, cross-attention)은 모두 Multi-Head Attention입니다. <a href="#s2">3.1</a>에서는 그 안의 계산 하나를 봤고, 여기서는 블록 하나를 열어 전체 구조를 봅니다.</p>
+              <p>입력을 헤드마다 다른 행렬로 투영해 3.1 계산을 h번 동시에 하고, 결과를 이어 붙인 뒤 W<sup>O</sup>로 섞습니다. 논문은 h = 8, 헤드당 64차원을 씁니다.</p>
+            </div>
+          </div>
+
+          <div class="prose">
+            <h3>왜 이런 구조인가</h3>
+            <p>3.1의 attention은 단어마다 "누구를 얼마나 볼지" 비율을 <b>하나만</b> 만듭니다. 그런데 한 단어가 동시에 봐야 할 관계는 여러 가지입니다. "The animal didn't cross the street because it was too tired"에서 "it"은 가리키는 대상인 "animal"도 봐야 하고, 자기 상태를 설명하는 "tired"도 봐야 합니다. 비율이 하나뿐이면 두 곳을 모두 강하게 볼 수 없어서, 시선이 어중간하게 퍼지거나 한쪽을 포기해야 합니다.</p>
+            <p>그래서 attention을 여러 개로 나눕니다. 각 헤드는 자기만의 투영 행렬 W<sub>i</sub><sup>Q</sup>, W<sub>i</sub><sup>K</sup>, W<sub>i</sub><sup>V</sup>를 가지므로, 같은 입력을 서로 다른 관점(부분공간)에서 보고 비율도 각자 만듭니다. 한 헤드는 가리키는 대상을, 다른 헤드는 꾸며 주는 말을 보는 식입니다. 어떤 헤드가 무엇을 볼지는 사람이 정하지 않고, 학습하면서 저절로 나뉩니다.</p>
+            <p>헤드 수를 늘리는 대신 헤드 하나의 크기는 줄입니다. 512차원 attention 하나 대신 64차원 attention 8개를 돌리므로 파라미터 수와 연산량은 같습니다(실험 3-5). 8개 헤드의 출력을 이어 붙이면 다시 512차원이 되고, 마지막 W<sup>O</sup>가 헤드들의 결과를 섞어 다음 층으로 넘깁니다.</p>
+            <p>구현에서는 헤드마다 따로 곱하지 않습니다. 512 × 512 행렬 하나로 투영한 뒤, 텐서 모양만 바꿔(reshape·transpose) 8개 헤드로 나눕니다. 이 과정을 shape으로 따라가 봅시다.</p>
+          </div>
+
+          <div class="lab" id="lab-5-1">
+            <div class="lab-head"><span class="lab-tag">실험 3-3</span><h3>텐서 shape 추적: view와 transpose</h3></div>
+            <p class="lab-desc">표의 단계를 누르면 배치 한 개(B 축 생략)의 텐서 모양이 그림으로 바뀝니다. 색은 헤드를 나타냅니다. 코드는 PyTorch 기준입니다.</p>
+            <div class="controls">
+              <label class="ctl">B <input type="number" id="s5-B" min="1" max="512" value="2"></label>
+              <label class="ctl">n <input type="number" id="s5-n" min="1" max="8192" value="10"></label>
+              <label class="ctl"><span>d<sub>model</sub></span> <select id="s5-d"><option>64</option><option>128</option><option>256</option><option selected>512</option><option>768</option><option>1024</option></select></label>
+              <label class="ctl">h <select id="s5-h"><option>1</option><option>2</option><option>4</option><option selected>8</option><option>16</option></select></label>
+              <span class="ctl"><span>d<sub>k</sub> = d<sub>model</sub>/h =</span> <span class="val" id="s5-dk"></span></span>
+            </div>
+            <div class="grid-2" style="align-items:start">
+              <div class="tbl-wrap"><table class="tbl" id="s5-steps"></table></div>
+              <div>
+                <svg id="s5-svg" class="dg" viewBox="0 0 440 250" style="width:100%;display:block"></svg>
+                <p class="step-note" id="s5-note" style="margin-top:8px"></p>
+              </div>
+            </div>
+          </div>
+
+          <div class="predict">
+            <div class="predict-label">예측해 보기 <span class="steps">예측 → 실험 3-4 → 확인</span></div>
+            <p class="predict-q">네 헤드가 각각 "직전 단어", "명사", "같은 단어", "다음 단어"를 보도록 설계돼 있습니다. 같은 투영을 헤드 1개(d<sub>k</sub> = 8)로 합치면 어떻게 될까요?</p>
+            <div class="predict-opts">
+              <button class="predict-opt">네 가지 관계가 한 지도에 모두 선명하게 나타난다</button>
+              <button class="predict-opt" data-correct>점수가 더해져 관계들이 뭉개지고, 각 관계를 제대로 보지 못한다</button>
+              <button class="predict-opt">가장 강한 관계 하나만 그대로 남는다</button>
+            </div>
+            <div class="predict-foot"><button class="btn predict-check" type="button" disabled>결과 확인</button><span class="predict-status">보기를 하나 고르세요.</span></div>
+            <div class="predict-reveal" hidden>
+              <p>헤드가 하나면 점수는 네 부분공간 점수의 합이 되고, softmax는 그 합에서 분포 하나만 만들 수 있습니다. "직전 단어"와 "다음 단어"를 동시에 강하게 볼 수 없으니 둘 사이인 자기 자신 쪽으로 쏠립니다. 아래 표에서 h = 4일 때보다 h = 1일 때 관계별 가중치가 크게 떨어지는 것을 보세요.</p>
+              <p>논문이 "헤드가 하나면 평균이 이것을 방해한다"고 쓴 현상입니다. 실제 학습된 모델의 헤드도 이렇게 역할이 나뉘는 경향이 있고, 전체 실습 §9에서 직접 확인할 수 있습니다.</p>
+            </div>
+          </div>
+
+          <div class="lab" id="lab-5-2">
+            <div class="lab-head"><span class="lab-tag">실험 3-4</span><h3>헤드별 attention map 나란히 보기</h3></div>
+            <p class="lab-desc">"the cat sat on the mat"의 8차원 임베딩을 두 차원씩 네 부분공간으로 나눠 서로 다른 정보를 담았습니다. W<sup>Q</sup>, W<sup>K</sup>는 학습된 값이 아니라 설명을 위해 직접 설계한 값이고, 계산은 실제 attention 공식 그대로입니다. 행이 query, 열이 key입니다.</p>
+            <div class="controls"><span class="ctl">헤드 수 h <span id="s5-hsel"></span></span></div>
+            <div class="grid-2" style="align-items:start">
+              <div class="panel"><p class="panel-title">입력 X <span class="shape">6 × 8</span></p><div class="scroll-x" id="s5-X"></div></div>
+              <div class="panel"><p class="panel-title">부분공간과 헤드</p><div id="s5-sub" style="font-size:13px;display:grid;gap:4px"></div></div>
+            </div>
+            <div class="maps" id="s5-maps" style="margin-top:16px"></div>
+            <div class="lab-part"><h4>관계별 포착 가중치 (토큰 평균)</h4><div class="tbl-wrap"><table class="tbl" id="s5-rel"></table></div></div>
+          </div>
+
+          <div class="predict">
+            <div class="predict-label">예측해 보기 <span class="steps">예측 → 실험 3-5 → 확인</span></div>
+            <p class="predict-q">d<sub>model</sub> = 512를 h = 8개 헤드(각 d<sub>k</sub> = 64)로 나누면, 헤드 1개(d<sub>k</sub> = 512)일 때보다 W<sup>Q</sup>, W<sup>K</sup>, W<sup>V</sup>, W<sup>O</sup>의 파라미터 수는?</p>
+            <div class="predict-opts">
+              <button class="predict-opt">8배 많다 (헤드마다 따로 있으니까)</button>
+              <button class="predict-opt">1/8로 줄어든다</button>
+              <button class="predict-opt" data-correct>같다</button>
+            </div>
+            <div class="predict-foot"><button class="btn predict-check" type="button" disabled>결과 확인</button><span class="predict-status">보기를 하나 고르세요.</span></div>
+            <div class="predict-reveal" hidden>
+              <p>헤드 i의 W<sub>i</sub><sup>Q</sup>는 512 × 64이고, 8개를 이어 붙이면 512 × 512로 단일 헤드와 같습니다. 연산량도 같습니다. 투영은 동일하고, 점수 계산은 h·n²·d<sub>k</sub> = n²·d<sub>model</sub>입니다. 달라지는 것은 attention 행렬을 h개 저장해야 한다는 점(메모리 h·n²) 정도입니다.</p>
+              <p>같은 비용으로 여러 관점을 얻는 셈입니다. Table 3 (A)에서 h = 1은 BLEU가 0.9 낮았고, 반대로 h = 32(d<sub>k</sub> = 16)처럼 너무 잘게 나눠도 성능이 떨어졌습니다.</p>
+            </div>
+          </div>
+
+          <div class="lab" id="lab-5-3">
+            <div class="lab-head"><span class="lab-tag">실험 3-5</span><h3>Single-head vs Multi-head 비용</h3></div>
+            <p class="lab-desc">실험 3-3의 n, d<sub>model</sub>, h 설정을 그대로 씁니다. 곱셈-덧셈(MAC) 횟수 기준, 배치 1개, bias 제외.</p>
+            <div class="tbl-wrap"><table class="tbl" id="s5-cost"></table></div>
+          </div>
+        </div>
+
+        <aside class="paper-ref">
+          <div class="ref-label">원문 대조 <a href="https://arxiv.org/abs/1706.03762" target="_blank" rel="noopener">arXiv ↗</a></div>
+          <p class="ref-sec">§3.2.2 Multi-Head Attention</p>
+          <div class="eq">\[\mathrm{MultiHead}(Q,K,V)=\mathrm{Concat}(\mathrm{head}_1,\dots,\mathrm{head}_h)\,W^{O}\]</div>
+          <div class="eq">\[\mathrm{head}_i=\mathrm{Attention}(QW_i^{Q},\,KW_i^{K},\,VW_i^{V})\]</div>
+          <p>W<sub>i</sub><sup>Q</sup>, W<sub>i</sub><sup>K</sup> ∈ ℝ<sup>d<sub>model</sub>×d<sub>k</sub></sup>, W<sub>i</sub><sup>V</sup> ∈ ℝ<sup>d<sub>model</sub>×d<sub>v</sub></sup>, W<sup>O</sup> ∈ ℝ<sup>h·d<sub>v</sub>×d<sub>model</sub></sup>. 논문은 h = 8, d<sub>k</sub> = d<sub>v</sub> = d<sub>model</sub>/h = 64를 씁니다.</p>
+          <p>여러 헤드는 서로 다른 표현 부분공간의 서로 다른 위치 정보를 함께 볼 수 있게 해 줍니다. 헤드가 하나면 평균이 이를 방해합니다. 헤드당 차원이 줄어서 총 연산 비용은 전체 차원의 single-head attention과 비슷합니다.</p>
+          <p class="ref-sec">Table 3 (A) · dev BLEU</p>
+          <div class="tbl-wrap">
+            <table class="tbl">
+              <thead><tr><th>h</th><th class="num">d<sub>k</sub></th><th class="num">BLEU</th></tr></thead>
+              <tbody>
+                <tr><td>1</td><td class="num">512</td><td class="num">24.9</td></tr>
+                <tr><td>4</td><td class="num">128</td><td class="num">25.5</td></tr>
+                <tr><td><b>8 (base)</b></td><td class="num">64</td><td class="num">25.8</td></tr>
+                <tr><td>16</td><td class="num">32</td><td class="num">25.8</td></tr>
+                <tr><td>32</td><td class="num">16</td><td class="num">25.4</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </aside>
+      </div>
+      <footer class="sec-foot">
+        <label class="done-check"><input type="checkbox" data-done="s5"> 이 섹션을 이해했어요</label>
+        <a class="next" href="#s3">다음: Masking과 attention의 세 가지 쓰임 →</a>
+      </footer>
+    </section>
+<section class="sec" id="s3">
+      <header class="sec-head">
+        <div class="sec-num">3.3</div>
+        <div>
+          <p class="sec-eyebrow">§3.2.3 Applications of Attention · §3.1 Decoder · §3.2.3 · Figure 2 (Mask)</p>
+          <h2>Masking: 보면 안 되는 칸 가리기</h2>
+          <p class="lede">Mask는 softmax 직전에 보면 안 되는 칸을 −∞로 바꿔, 그 칸의 가중치를 정확히 0으로 만듭니다.</p>
+        </div>
+      </header>
+      <div class="sec-body">
+        <div class="sec-main">
+          <div class="callout">
+            <b>논문 §3.2.3: attention이 쓰이는 세 곳</b>
+            <ul style="margin:6px 0 0;padding-left:1.2em">
+              <li><b>인코더 self-attention</b>: 입력 문장의 단어끼리 서로 봅니다(가리는 칸 없음).</li>
+              <li><b>디코더 masked self-attention</b>: 이미 만든 앞쪽 단어만 봅니다. 아래 실험의 causal mask가 이것입니다.</li>
+              <li><b>Cross-attention</b>: 디코더가 Query, 인코더 출력이 Key·Value입니다. Part 2 그림의 가운데 블록입니다.</li>
+            </ul>
+          </div>
+
+          <div class="sec-ctx">
+            <svg class="ctx-map" viewBox="0 0 300 218" role="img" aria-label="Transformer 구조에서 디코더의 masked self-attention이 강조되고, 나머지 attention 블록 두 곳은 보통으로 표시된 그림">
+              <defs><marker id="ctx3-ah" viewBox="0 0 8 8" refX="7.5" refY="4" markerWidth="6" markerHeight="6" orient="auto"><path d="M0 0L8 4L0 8z" class="map-head"/></marker>
+                <marker id="ctx3-ahx" viewBox="0 0 8 8" refX="7.5" refY="4" markerWidth="6" markerHeight="6" orient="auto"><path d="M0 0L8 4L0 8z" class="map-head-x"/></marker></defs>
+              <rect class="map-frame" x="8" y="40" width="132" height="110" rx="8"/>
+              <rect class="map-frame" x="160" y="40" width="132" height="134" rx="8"/>
+              <text class="ctx-fl" x="16" y="55">인코더 × N</text>
+              <text class="ctx-fl" x="168" y="55">디코더 × N</text>
+              <g class="map-wire">
+                <path d="M74 190V140" marker-end="url(#ctx3-ah)"/><path d="M74 114V88" marker-end="url(#ctx3-ah)"/>
+                <path d="M226 190V166" marker-end="url(#ctx3-ah)"/><path d="M226 140V126" marker-end="url(#ctx3-ah)"/><path d="M226 100V88" marker-end="url(#ctx3-ah)"/>
+              </g>
+              <path class="map-x" d="M74 62V26H150V112H164" marker-end="url(#ctx3-ahx)"/>
+              <text class="map-xl" x="112" y="20" text-anchor="middle">K, V</text>
+              <g class="mb ffn dim"><rect x="14" y="62" width="120" height="24" rx="5"/><text x="74" y="78">FFN</text></g>
+              <g class="mb attn "><rect x="14" y="114" width="120" height="24" rx="5"/><text x="74" y="130">Self-attention</text></g>
+              <g class="mb emb dim"><rect x="14" y="190" width="120" height="24" rx="5"/><text x="74" y="206">임베딩 + 위치</text></g>
+              <g class="mb ffn dim"><rect x="166" y="62" width="120" height="24" rx="5"/><text x="226" y="78">FFN</text></g>
+              <g class="mb attn "><rect x="166" y="100" width="120" height="24" rx="5"/><text x="226" y="116">Cross-attention</text></g>
+              <g class="mb attn here"><rect x="166" y="140" width="120" height="24" rx="5"/><text x="226" y="156">Masked self-attn</text></g>
+              <g class="mb emb dim"><rect x="166" y="190" width="120" height="24" rx="5"/><text x="226" y="206">임베딩 + 위치</text></g>
+            </svg>
+            <div>
+              <p class="ctx-label">지금 보는 부분</p>
+              <p><b>Causal mask</b>는 파란 테두리, 디코더의 masked self-attention에만 씁니다. <b>Padding mask</b>는 &lt;pad&gt;가 들어가는 모든 attention 블록(나머지 두 곳 포함)에 씁니다.</p>
+              <p>둘 다 <a href="#s2">3.1</a> 실험 3-1의 ③ 단계, softmax 직전에 점수를 가리는 한 줄짜리 처리입니다.</p>
+            </div>
+          </div>
+
+          <div class="prose">
+            <h3>왜 이런 형태인가</h3>
+            <p>Attention 행렬은 모든 칸을 계산하지만, 어떤 칸은 쓰면 안 됩니다. 두 경우가 있습니다.</p>
+            <p><b>Padding mask</b>: 길이가 다른 문장을 한 배치로 묶으려고 짧은 문장 뒤에 &lt;pad&gt;를 채웁니다. 의미 없는 토큰이니 key 쪽에서 가립니다. 가리지 않으면 같은 문장이라도 함께 묶인 다른 문장의 길이에 따라 결과가 달라집니다.</p>
+            <p><b>Causal (look-ahead) mask</b>: 디코더는 번역할 때 한 단어씩 만듭니다(<a href="index.html#s8">전체 실습 §8</a>). 학습 때는 속도를 위해 정답 문장 전체를 한 번에 넣고 모든 위치를 동시에 예측시키는데, 이때 위치 i가 i 뒤의 정답 단어를 볼 수 있으면 커닝이 됩니다. 그래서 j &gt; i인 칸을 가려, 한 번의 계산으로 "앞 단어만 보고 다음 단어 맞히기"를 모든 위치에서 동시에 연습하게 합니다(실험 3-8).</p>
+            <p>가리는 방법은 단순합니다. softmax 직전 점수에 −∞(구현에서는 −10<sup>9</sup> 같은 큰 음수)를 더하면 e<sup>−∞</sup> = 0이 되어 가중치가 정확히 0이 됩니다. softmax 뒤에 가중치를 0으로 지우면 행의 합이 1보다 작아져 다시 나눠야 하지만, softmax 전에 가리면 남은 칸끼리 자동으로 합이 1이 됩니다.</p>
+          </div>
+
+          <div class="lab" id="lab-3-1">
+            <div class="lab-head"><span class="lab-tag">실험 3-6</span><h3>Padding mask와 causal mask 켜고 끄기</h3></div>
+            <p class="lab-desc">디코더 입력 6칸 중 뒤의 2칸은 길이를 맞추려 채운 &lt;pad&gt;입니다. 두 마스크를 켜고 끄면서 softmax 결과를 보세요. 빗금 칸이 −∞로 가려진 칸입니다.</p>
+            <div class="controls">
+              <label class="ctl"><input type="checkbox" id="s3-pad" checked> padding mask</label>
+              <label class="ctl"><input type="checkbox" id="s3-causal" checked> causal mask</label>
+            </div>
+            <div class="grid-2">
+              <div class="panel"><p class="panel-title">마스크 M</p><div class="scroll-x" id="s3-M"></div></div>
+              <div class="panel"><p class="panel-title">점수 + M</p><div class="scroll-x" id="s3-S"></div></div>
+            </div>
+            <div class="panel" style="margin-top:18px"><p class="panel-title">softmax 결과 A <span class="hint">오른쪽 열: 행마다 &lt;pad&gt;에 간 가중치의 합</span></p><div class="scroll-x" id="s3-A" style="display:flex;gap:14px;align-items:flex-start"></div></div>
+            <p class="readout" id="s3-read" style="margin-top:12px"></p>
+          </div>
+
+          <div class="predict">
+            <div class="predict-label">예측해 보기 <span class="steps">예측 → 실험 3-7 → 확인</span></div>
+            <p class="predict-q">causal mask를 켠 상태에서 4번째 토큰의 값만 바꾸면, attention 출력의 어느 행이 달라질까요?</p>
+            <div class="predict-opts">
+              <button class="predict-opt">모든 행 (1~6)</button>
+              <button class="predict-opt">4번째 행만</button>
+              <button class="predict-opt" data-correct>4번째와 그 이후 행 (4, 5, 6)</button>
+            </div>
+            <div class="predict-foot"><button class="btn predict-check" type="button" disabled>결과 확인</button><span class="predict-status">보기를 하나 고르세요.</span></div>
+            <div class="predict-reveal" hidden>
+              <p>출력 i행은 key 1…i만 섞습니다. 4번째 토큰은 4, 5, 6행의 계산에만 key·value로 참여하므로 1~3행은 비트 단위까지 같습니다. mask를 끄면 모든 행이 바뀝니다. 앞 위치가 뒤 위치의 정보를 미리 본 것이죠.</p>
+              <p>이 성질 덕분에 학습 때 정답 문장 전체를 한 번에 넣어도(실험 3-8), 각 위치는 자기보다 앞선 토큰만 본 것과 똑같은 결과를 얻습니다. 한 토큰씩 생성하는 추론 상황과 학습 상황이 정확히 일치합니다.</p>
+            </div>
+          </div>
+
+          <div class="lab" id="lab-3-2">
+            <div class="lab-head"><span class="lab-tag">실험 3-7</span><h3>미래를 보는지 확인하기: 토큰 하나 바꾸기</h3></div>
+            <p class="lab-desc">토큰 6개에 self-attention을 적용한 뒤, k번째 토큰의 임베딩만 다른 값으로 바꿉니다. 막대는 위치마다 출력이 얼마나 변했는지(‖Δ출력‖)입니다.</p>
+            <div class="controls">
+              <span class="ctl">바꿀 위치 k <span id="s3-k"></span></span>
+              <label class="ctl"><input type="checkbox" id="s3-leak-causal" checked> causal mask</label>
+              <button class="btn small" id="s3-reroll" type="button">다른 값으로 바꾸기</button>
+            </div>
+            <div id="s3-diff"></div>
+            <p class="readout" id="s3-diff-read" style="margin-top:10px"></p>
+          </div>
+
+          <div class="lab" id="lab-3-3">
+            <div class="lab-head"><span class="lab-tag">실험 3-8</span><h3>병렬 계산 = 순차 계산</h3></div>
+            <p class="lab-desc">왼쪽은 위치 t마다 앞의 t개 토큰만 잘라 따로 계산한 결과(추론처럼 6번 실행), 오른쪽은 causal mask를 씌워 행렬 곱 한 번으로 계산한 결과입니다. 출력은 6 × 8 행렬입니다.</p>
+            <div class="btn-row" style="margin-bottom:12px"><button class="btn primary" id="s3-play" type="button">순차 계산 재생</button><span class="run-status" id="s3-play-st"></span></div>
+            <div class="grid-2">
+              <div class="panel"><p class="panel-title">순차: t = 1…6을 하나씩</p><div class="scroll-x" id="s3-seq"></div></div>
+              <div class="panel"><p class="panel-title">병렬: mask + 행렬 곱 한 번</p><div class="scroll-x" id="s3-par"></div></div>
+            </div>
+            <p class="readout" id="s3-eq" style="margin-top:12px"></p>
+          </div>
+        </div>
+
+        <aside class="paper-ref">
+          <div class="ref-label">원문 대조 <a href="https://arxiv.org/abs/1706.03762" target="_blank" rel="noopener">arXiv ↗</a></div>
+          <p class="ref-sec">§3.2.3 Applications of Attention</p>
+          <p>디코더 self-attention은 각 위치가 자기 자신까지만 보도록 막아야 auto-regressive 성질이 유지됩니다. 이를 위해 scaled dot-product attention 안에서 금지된 연결에 해당하는 softmax 입력을 −∞로 설정합니다.</p>
+          <p class="ref-sec">§3.1 Decoder</p>
+          <p>출력 임베딩을 한 칸 밀어서(shifted right) 넣고 마스킹을 함께 쓰면, 위치 i의 예측은 i보다 앞선 위치의 알려진 출력에만 의존합니다.</p>
+          <p class="ref-sec">Figure 2 (왼쪽)</p>
+          <p>Scaled Dot-Product Attention 그림에서 "Mask (opt.)" 블록은 Scale과 SoftMax 사이에 있습니다.</p>
+          <p class="ref-sec">Padding mask</p>
+          <p>본문에 따로 설명은 없지만, 길이가 다른 문장을 배치로 묶는 구현이라면 모두 씁니다. 저자들의 tensor2tensor 구현도 마찬가지입니다.</p>
+        </aside>
+      </div>
+      <footer class="sec-foot">
+        <label class="done-check"><input type="checkbox" data-done="s3"> 이 섹션을 이해했어요</label>
+        <a class="next" href="#ffn">다음: Position-wise Feed-Forward →</a>
+      </footer>
+    </section>
+
+    <div class="part-band" id="part4">
+      <span class="part-n">PART 4</span>
+      <span class="part-t">Position-wise Feed-Forward</span>
+      <span class="part-m">논문 §3.3 · 약 0.5분</span>
+      
+    </div>
+
+
+    <section class="sec" id="ffn">
+      <header class="sec-head">
+        <div class="sec-num">4</div>
+        <div>
+          <p class="sec-eyebrow">§3.3 Position-wise Feed-Forward Networks</p>
+          <h2>Position-wise Feed-Forward</h2>
+          <p class="lede">attention이 단어 <b>사이</b>에서 정보를 섞는다면, FFN은 단어 <b>하나하나</b>의 벡터를 따로 가공합니다.</p>
+        </div>
+      </header>
+      <div class="sec-body">
+        <div class="sec-main">
+          <div class="prose">
+            <p>attention 서브레이어 바로 뒤에는 작은 신경망(FFN)이 붙습니다. 512차원 벡터를 2048차원으로 넓혔다가 ReLU를 거쳐 다시 512차원으로 줄입니다. "position-wise"라는 이름은 <b>모든 위치(단어)에 같은 가중치를 각각 따로</b> 적용한다는 뜻입니다. 단어끼리 정보를 주고받는 일은 attention이 이미 했으니, FFN은 모은 정보를 단어마다 한 번 더 가공합니다.</p>
+          </div>
+          <figure class="intro-fig" style="max-width:560px;margin-top:0">
+            <svg viewBox="0 0 560 150" role="img" aria-label="FFN: 512차원 → 2048차원(ReLU) → 512차원">
+              <g class="ia-box"><rect x="20" y="45" width="90" height="60" rx="6"/><rect x="420" y="45" width="90" height="60" rx="6"/></g>
+              <g class="ia-box ia-on"><rect x="175" y="10" width="180" height="130" rx="6"/></g>
+              <g class="ia-chain"><path d="M112 75H170"/><path d="M358 75H416"/></g>
+              <g class="ia-word"><text x="65" y="80">512</text><text x="265" y="70">2048</text><text x="265" y="92" style="font-size:12px">ReLU</text><text x="465" y="80">512</text></g>
+              <text class="ia-note" x="141" y="68" text-anchor="middle">W₁</text><text class="ia-note" x="387" y="68" text-anchor="middle">W₂</text>
+            </svg>
+            <figcaption>단어 벡터 하나가 지나가는 길. 모든 단어가 같은 W₁, W₂를 씁니다.</figcaption>
+          </figure>
+          <div class="callout"><b>숫자로 보면</b> 층마다 FFN 파라미터는 약 210만 개로, 같은 층의 attention(약 105만 개)의 두 배입니다. base 모델 전체로는 파라미터의 약 40%가 FFN에 있습니다. 이름은 "Attention Is All You Need"지만 가장 큰 몫은 FFN입니다.</div>
+          <div class="btn-row"><button class="btn" type="button" data-fig-open="enc-ffn">Part 2 그림에서 FFN 축소판 계산 보기 ↑</button></div>
+        </div>
+        <aside class="paper-ref">
+          <div class="ref-label">원문 대조 <a href="https://arxiv.org/abs/1706.03762" target="_blank" rel="noopener">arXiv ↗</a></div>
+          <p class="ref-sec">§3.3 Position-wise FFN</p>
+          <div class="eq">\[\mathrm{FFN}(x)=\max(0,\,xW_1+b_1)\,W_2+b_2\]</div>
+          <p>위치마다 같은 선형 변환을 쓰지만 층마다 파라미터는 다릅니다. 커널 크기 1인 합성곱 두 개로 볼 수도 있습니다. 입력·출력 차원 d<sub>model</sub> = 512, 내부 차원 d<sub>ff</sub> = 2048.</p>
+        </aside>
+      </div>
+      <footer class="sec-foot">
+        <label class="done-check"><input type="checkbox" data-done="ffn"> 이 섹션을 이해했어요</label>
+        <a class="next" href="#emb">다음: Embeddings와 Softmax →</a>
+      </footer>
+    </section>
+
+
+    <div class="part-band" id="part5">
+      <span class="part-n">PART 5</span>
+      <span class="part-t">Embeddings · Softmax · Positional Encoding</span>
+      <span class="part-m">논문 §3.4·§3.5 · 약 1.5분</span>
+      <span class="part-i">5.1 단어 ↔ 벡터 → 5.2 순서 정보 더하기</span>
+    </div>
+
+
+    <section class="sec" id="emb">
+      <header class="sec-head">
+        <div class="sec-num">5.1</div>
+        <div>
+          <p class="sec-eyebrow">§3.4 Embeddings and Softmax</p>
+          <h2>Embeddings와 Softmax: 단어 ↔ 벡터</h2>
+          <p class="lede">모델의 입구에서는 단어를 벡터로 바꾸고, 출구에서는 벡터를 다시 단어 확률로 바꿉니다.</p>
+        </div>
+      </header>
+      <div class="sec-body">
+        <div class="sec-main">
+          <div class="prose">
+            <p><b>입구 (Embedding)</b>: 단어마다 번호가 있고, 37,000 × 512 크기의 표에서 그 번호의 행을 꺼내면 512차원 벡터가 됩니다. 논문은 이 벡터에 √d<sub>model</sub>(≈ 22.6)을 곱해서 씁니다.</p>
+            <p><b>출구 (Linear + Softmax)</b>: 디코더의 마지막 벡터를 같은 표의 모든 단어 벡터와 비교해 단어마다 점수(로짓)를 매기고, softmax로 확률로 바꿉니다. 가장 확률이 높은 단어가 다음 단어 후보가 됩니다.</p>
+            <p>논문은 입력 임베딩, 출력 임베딩, softmax 직전 Linear 세 곳이 <b>같은 표 하나를 공유</b>하게 했습니다. "이 벡터와 가장 닮은 단어"를 고르는 셈이고, 표를 따로 둘 때보다 파라미터도 약 3,800만 개(2 × 37,000 × 512) 아낍니다.</p>
+          </div>
+          <div class="btn-row"><button class="btn" type="button" data-fig-open="emb-in">Part 2 그림에서 Embedding 보기 ↑</button><button class="btn" type="button" data-fig-open="linear">Linear + Softmax 보기 ↑</button></div>
+          <div class="callout">그런데 임베딩 표에는 <b>단어 정보만</b> 있고 "몇 번째 단어인지"는 없습니다. attention도 순서를 보지 않으니, 위치 정보를 따로 더해야 합니다. 그것이 바로 다음 5.2입니다.</div>
+        </div>
+        <aside class="paper-ref">
+          <div class="ref-label">원문 대조 <a href="https://arxiv.org/abs/1706.03762" target="_blank" rel="noopener">arXiv ↗</a></div>
+          <p class="ref-sec">§3.4 Embeddings and Softmax</p>
+          <p>학습된 임베딩으로 입력·출력 토큰을 d<sub>model</sub>차원 벡터로 바꾸고, 디코더 출력은 학습된 선형 변환과 softmax로 다음 토큰 확률이 됩니다. 두 임베딩 층과 softmax 직전 선형 변환이 같은 가중치 행렬을 공유하고, 임베딩 층에서는 가중치에 √d<sub>model</sub>을 곱합니다.</p>
+        </aside>
+      </div>
+      <footer class="sec-foot">
+        <label class="done-check"><input type="checkbox" data-done="emb"> 이 섹션을 이해했어요</label>
+        <a class="next" href="#s4">다음: Positional Encoding →</a>
+      </footer>
+    </section>
+
+<section class="sec" id="s4">
+      <header class="sec-head">
+        <div class="sec-num">5.2</div>
+        <div>
+          <p class="sec-eyebrow">§3.5 Positional Encoding · Table 3 (E)</p>
+          <h2>Positional Encoding</h2>
+          <p class="lede">Attention은 순서를 모릅니다. 위치마다 고유한 사인파 무늬를 임베딩에 더해서 순서를 알려 줍니다.</p>
+        </div>
+      </header>
+      <div class="sec-body">
+        <div class="sec-main">
+          <div class="sec-ctx">
+            <svg class="ctx-map" viewBox="0 0 300 218" role="img" aria-label="Transformer 구조에서 인코더와 디코더 맨 아래의 임베딩 + 위치 인코딩 블록이 강조된 그림">
+              <defs><marker id="ctx4-ah" viewBox="0 0 8 8" refX="7.5" refY="4" markerWidth="6" markerHeight="6" orient="auto"><path d="M0 0L8 4L0 8z" class="map-head"/></marker>
+                <marker id="ctx4-ahx" viewBox="0 0 8 8" refX="7.5" refY="4" markerWidth="6" markerHeight="6" orient="auto"><path d="M0 0L8 4L0 8z" class="map-head-x"/></marker></defs>
+              <rect class="map-frame" x="8" y="40" width="132" height="110" rx="8"/>
+              <rect class="map-frame" x="160" y="40" width="132" height="134" rx="8"/>
+              <text class="ctx-fl" x="16" y="55">인코더 × N</text>
+              <text class="ctx-fl" x="168" y="55">디코더 × N</text>
+              <g class="map-wire">
+                <path d="M74 190V140" marker-end="url(#ctx4-ah)"/><path d="M74 114V88" marker-end="url(#ctx4-ah)"/>
+                <path d="M226 190V166" marker-end="url(#ctx4-ah)"/><path d="M226 140V126" marker-end="url(#ctx4-ah)"/><path d="M226 100V88" marker-end="url(#ctx4-ah)"/>
+              </g>
+              <path class="map-x" d="M74 62V26H150V112H164" marker-end="url(#ctx4-ahx)"/>
+              <text class="map-xl" x="112" y="20" text-anchor="middle">K, V</text>
+              <g class="mb ffn dim"><rect x="14" y="62" width="120" height="24" rx="5"/><text x="74" y="78">FFN</text></g>
+              <g class="mb attn dim"><rect x="14" y="114" width="120" height="24" rx="5"/><text x="74" y="130">Self-attention</text></g>
+              <g class="mb emb here"><rect x="14" y="190" width="120" height="24" rx="5"/><text x="74" y="206">임베딩 + 위치</text></g>
+              <g class="mb ffn dim"><rect x="166" y="62" width="120" height="24" rx="5"/><text x="226" y="78">FFN</text></g>
+              <g class="mb attn dim"><rect x="166" y="100" width="120" height="24" rx="5"/><text x="226" y="116">Cross-attention</text></g>
+              <g class="mb attn dim"><rect x="166" y="140" width="120" height="24" rx="5"/><text x="226" y="156">Masked self-attn</text></g>
+              <g class="mb emb here"><rect x="166" y="190" width="120" height="24" rx="5"/><text x="226" y="206">임베딩 + 위치</text></g>
+            </svg>
+            <div>
+              <p class="ctx-label">지금 보는 부분</p>
+              <p>파란 테두리, 인코더와 디코더의 맨 아래입니다. 단어 임베딩에 위치 벡터를 <b>한 번만</b> 더하고, 위의 층들은 잔차 연결을 따라 이 정보를 그대로 전달받습니다(<a href="#s6">2</a>).</p>
+              <p>attention 블록 안에서는 위치를 따로 다루지 않습니다. 순서 정보는 전부 여기서 들어갑니다.</p>
+            </div>
+          </div>
+
+          <div class="prose">
+            <h3>왜 이런 형태인가</h3>
+            <p>3.1의 계산을 다시 보면 위치 번호가 어디에도 없습니다. 점수는 두 벡터의 내적일 뿐이라, 입력 순서를 섞으면 출력도 똑같이 섞일 뿐 값은 그대로입니다. 이를 <b>순열 등변성</b>(permutation equivariance)이라 합니다. 문장의 순서를 구분하려면 위치 정보를 따로 넣어야 합니다.</p>
+            <p>해법은 위치마다 다른 벡터 PE(pos)를 만들어 단어 임베딩에 더하는 것입니다. 임베딩과 차원이 같으니 더하기만 하면 되고, 추가 파라미터나 구조 변경 없이 위의 모든 층을 그대로 쓸 수 있습니다. 남는 문제는 위치 벡터를 어떻게 만드느냐입니다. 그냥 1, 2, 3을 쓰면 긴 문장에서 값이 수백까지 커져 단어 정보를 덮어 버립니다. 그래서 논문은 값이 −1과 1 사이에 머무는 사인파를 씁니다. 그 구조는 실험 5-1 뒤에서 봅니다.</p>
+          </div>
+
+          <div class="predict">
+            <div class="predict-label">예측해 보기 <span class="steps">예측 → 실험 5-1 → 확인</span></div>
+            <p class="predict-q">위치 인코딩 없이 "dog bites man"과 "man bites dog"에 같은 self-attention을 적용하면, "dog" 토큰의 출력 벡터는?</p>
+            <div class="predict-opts">
+              <button class="predict-opt" data-correct>두 문장에서 완전히 같다</button>
+              <button class="predict-opt">주어·목적어 역할이 다르니 크게 다르다</button>
+              <button class="predict-opt">주변 단어 순서가 달라서 조금 다르다</button>
+            </div>
+            <div class="predict-foot"><button class="btn predict-check" type="button" disabled>결과 확인</button><span class="predict-status">보기를 하나 고르세요.</span></div>
+            <div class="predict-reveal" hidden>
+              <p>"dog"의 출력은 Σ<sub>j</sub> softmax(q<sub>dog</sub>·k<sub>j</sub>) v<sub>j</sub>이고, 이 합에는 순서가 없습니다. 두 문장은 같은 단어 집합 {dog, bites, man}이므로 dog의 출력은 정확히 같습니다. 모든 토큰이 그렇기 때문에 문장 전체를 평균한 표현도 같아집니다.</p>
+              <p>PE를 켜면 같은 단어라도 위치에 따라 입력이 달라져 출력이 갈라집니다. (디코더는 causal mask 때문에 약간의 순서 정보를 얻지만, 인코더에는 그것조차 없습니다.)</p>
+            </div>
+          </div>
+
+          <div class="lab" id="lab-4-1">
+            <div class="lab-head"><span class="lab-tag">실험 5-1</span><h3>순열 불변성: PE가 없으면 순서를 모른다</h3></div>
+            <p class="lab-desc">두 문장에 같은 self-attention(고정된 무작위 가중치, d<sub>model</sub> = 8)을 적용하고, 같은 단어끼리 출력 벡터를 비교합니다. 문장 B는 A의 단어 순서를 바꾼 것이어야 합니다. 아무 영어 단어나 넣어도 됩니다.</p>
+            <div class="controls">
+              <label class="ctl">문장 A <input type="text" id="s4-a" value="dog bites man" size="20"></label>
+              <label class="ctl">문장 B <input type="text" id="s4-b" value="man bites dog" size="20"></label>
+              <button class="btn small" id="s4-shuffle" type="button">A를 섞어 B 만들기</button>
+              <span class="ctl">위치 인코딩 <span id="s4-pe-seg"></span></span>
+            </div>
+            <div class="tbl-wrap"><table class="tbl" id="s4-cmp"></table></div>
+            <p class="readout" id="s4-cmp-read" style="margin-top:10px"></p>
+          </div>
+
+          <div class="prose">
+            <p>논문의 위치 벡터 PE(pos)에서 차원 쌍 (2i, 2i+1)은 주파수가 다른 사인·코사인이고, 앞쪽 차원은 빠르게, 뒤쪽 차원은 아주 느리게 진동합니다. 이진수에서 낮은 자리 비트는 자주, 높은 자리 비트는 드물게 바뀌는 것과 비슷합니다.</p>
+          </div>
+
+          <div class="lab" id="lab-4-2">
+            <div class="lab-head"><span class="lab-tag">실험 5-2</span><h3>사인파 위치 인코딩 heatmap</h3></div>
+            <p class="lab-desc">세로축이 위치(위에서 아래로 0, 1, 2…), 가로축이 차원입니다. 왼쪽 차원일수록 빠르게 진동하고, 오른쪽으로 갈수록 파장이 길어집니다(2π부터 10000·2π까지). 파랑은 +1, 빨강은 −1입니다.</p>
+            <div class="controls">
+              <label class="ctl">위치 수 <input type="range" id="s4-L" min="16" max="200" step="4" value="100"><output id="s4-L-out"></output></label>
+              <label class="ctl"><span>d<sub>model</sub></span> <select id="s4-d"><option>16</option><option>32</option><option>64</option><option selected>128</option><option>256</option><option>512</option></select></label>
+            </div>
+            <canvas id="s4-heat" style="width:100%;height:280px;display:block;border-radius:6px;cursor:crosshair" aria-label="위치 인코딩 heatmap"></canvas>
+            <p class="readout" id="s4-heat-read" style="margin-top:8px">heatmap에 마우스를 올리면 값과 파장을 보여 줍니다.</p>
+            <div class="lab-part">
+              <h4>차원 쌍 하나 자세히 보기</h4>
+              <div class="controls"><label class="ctl">쌍 번호 i <input type="range" id="s4-i" min="0" max="63" value="2"><output id="s4-i-out"></output></label></div>
+              <div id="s4-wave"></div>
+            </div>
+          </div>
+
+          <div class="lab" id="lab-4-3">
+            <div class="lab-head"><span class="lab-tag">실험 5-3</span><h3>가까운 위치일수록 비슷하다</h3></div>
+            <p class="lab-desc">위치 벡터끼리의 코사인 유사도입니다. 대각선(자기 자신)이 가장 밝고, 멀어질수록 어두워집니다. 위치 수와 d<sub>model</sub>은 실험 5-2 설정을 따릅니다.</p>
+            <div class="grid-2" style="align-items:start">
+              <div><canvas id="s4-sim" style="width:100%;max-width:330px;aspect-ratio:1/1;display:block;border-radius:6px" aria-label="위치 간 유사도 행렬"></canvas></div>
+              <div>
+                <div class="controls"><label class="ctl">기준 위치 p <input type="range" id="s4-p0" min="0" max="99" value="40"><output id="s4-p0-out"></output></label></div>
+                <div id="s4-simline"></div>
+              </div>
+            </div>
+            <div class="lab-part">
+              <h4>상대 위치 성질: PE(p)·PE(p+k)는 p와 무관하다</h4>
+              <div class="controls"><label class="ctl">거리 k <input type="range" id="s4-k" min="1" max="40" value="5"><output id="s4-k-out"></output></label></div>
+              <div id="s4-rel"></div>
+              <p class="note">각 쌍에서 PE(p+k)는 PE(p)를 각도 k·ω<sub>i</sub>만큼 회전한 것입니다. 그래서 내적은 Σ<sub>i</sub> cos(k·ω<sub>i</sub>)가 되어 거리 k에만 의존합니다. 논문이 "PE<sub>pos+k</sub>는 PE<sub>pos</sub>의 선형 함수로 표현된다"고 한 성질이고, 전체 실습 §11의 RoPE가 이 아이디어를 더 직접적으로 씁니다.</p>
+            </div>
+          </div>
+        </div>
+
+        <aside class="paper-ref">
+          <div class="ref-label">원문 대조 <a href="https://arxiv.org/abs/1706.03762" target="_blank" rel="noopener">arXiv ↗</a></div>
+          <p class="ref-sec">§3.5 Positional Encoding</p>
+          <div class="eq">\[PE_{(pos,\,2i)}=\sin\!\left(pos/10000^{2i/d_{\text{model}}}\right)\]</div>
+          <div class="eq">\[PE_{(pos,\,2i+1)}=\cos\!\left(pos/10000^{2i/d_{\text{model}}}\right)\]</div>
+          <p>pos는 위치, i는 차원 인덱스입니다. 차원마다 사인파 하나가 대응하고, 파장은 2π에서 10000·2π까지 기하급수로 늘어납니다.</p>
+          <p>임의의 고정 거리 k에 대해 PE<sub>pos+k</sub>를 PE<sub>pos</sub>의 선형 함수로 나타낼 수 있어, 상대 위치로 attention하기 쉬울 것이라고 가정했습니다.</p>
+          <p>PE는 임베딩과 차원이 같아 그냥 더하고, 인코더·디코더 스택의 맨 아래에서 한 번만 더합니다.</p>
+          <p class="ref-sec">Table 3 (E)</p>
+          <p>학습된 위치 임베딩도 시험했는데 결과가 거의 같았습니다(dev BLEU 25.7 vs 25.8). 학습 때보다 긴 시퀀스로 외삽할 수 있으리라 보고 사인파를 택했습니다.</p>
+        </aside>
+      </div>
+      <footer class="sec-foot">
+        <label class="done-check"><input type="checkbox" data-done="s4"> 이 섹션을 이해했어요</label>
+        <a class="next" href="#why">다음: 정리: 왜 self-attention인가 →</a>
+      </footer>
+    </section>
+
+    <div class="part-band" id="part6">
+      <span class="part-n">PART 6</span>
+      <span class="part-t">정리: 왜 self-attention인가</span>
+      <span class="part-m">논문 §4 · 약 0.5분</span>
+      
+    </div>
+
+
+    <section class="sec" id="why">
+      <header class="sec-head">
+        <div class="sec-num">6</div>
+        <div>
+          <p class="sec-eyebrow">§4 Why Self-Attention · Table 1</p>
+          <h2>정리: 왜 self-attention인가</h2>
+          <p class="lede">논문 4장은 self-attention을 RNN·CNN과 세 가지 기준으로 비교하며 마무리합니다.</p>
+        </div>
+      </header>
+      <div class="sec-body">
+        <div class="sec-main">
+          <div class="prose">
+            <p>층 하나의 연산량, 순서대로 해야 하는 계산 수, 먼 단어까지의 경로 길이. Part 1에서 그림으로 본 두 가지 문제(병렬화, 경로 길이)를 숫자로 확인하는 표입니다.</p>
+          </div>
+<div class="predict">
+            <div class="predict-label">예측해 보기 <span class="steps">예측 → 실험 6-1 → 확인</span></div>
+            <p class="predict-q">문장 길이가 n = 50 토큰, 모델 차원이 d = 512일 때, 층 하나의 연산량은 어느 쪽이 더 적을까요?</p>
+            <div class="predict-opts">
+              <button class="predict-opt" data-correct>Self-attention (n²·d)</button>
+              <button class="predict-opt">RNN (n·d²)</button>
+              <button class="predict-opt">거의 같다</button>
+            </div>
+            <div class="predict-foot"><button class="btn predict-check" type="button" disabled>결과 확인</button><span class="predict-status">보기를 하나 고르세요.</span></div>
+            <div class="predict-reveal" hidden>
+              <p><b>Self-attention이 약 10배 적습니다.</b> n²·d = 50² × 512 ≈ 128만, n·d² = 50 × 512² ≈ 1,311만입니다. 두 식의 비는 n/d이므로 <b>n &lt; d이면 self-attention이 유리</b>합니다. 논문이 다룬 기계번역 문장은 subword 단위로 수십 토큰이라 대부분 이 조건을 만족했습니다.</p>
+              <p>슬라이더로 n을 8,192까지 올려 보세요. n이 d를 넘는 순간 역전됩니다. 수만~수십만 토큰을 다루는 현대 LLM에서 attention의 n² 비용이 핵심 병목이 된 이유이고, 논문도 아주 긴 입력에는 주변 r개만 보는 restricted self-attention을 대안으로 언급했습니다.</p>
+            </div>
+          </div>
+
+          <div class="lab" id="lab-1-2">
+            <div class="lab-head"><span class="lab-tag">실험 6-1</span><h3>Table 1 계산기: 층 종류별 비용</h3></div>
+            <p class="lab-desc">시퀀스 길이 n과 표현 차원 d를 바꾸며 논문 Table 1의 세 기준을 실제 숫자로 비교합니다. 각 열에서 가장 유리한 값은 초록색입니다.</p>
+            <div class="controls">
+              <label class="ctl">시퀀스 길이 n <input type="range" id="s1-n" min="0" max="100" value="24"><output id="s1-n-out"></output></label>
+              <label class="ctl">차원 d <select id="s1-d"><option>64</option><option>128</option><option>256</option><option selected>512</option><option>1024</option><option>2048</option></select></label>
+              <label class="ctl">커널 k <input type="range" id="s1-k" min="3" max="9" step="2" value="3"><output id="s1-k-out"></output></label>
+              <label class="ctl">이웃 r <input type="range" id="s1-r" min="2" max="10" value="5"><output id="s1-r-out"></output></label>
+            </div>
+            <div class="tbl-wrap"><table class="tbl" id="s1-table"></table></div>
+            <div id="s1-chart" style="margin-top:18px"></div>
+            <p class="readout" id="s1-verdict" style="margin-top:8px"></p>
+          </div>
+
+          
+          <div class="callout">
+            <b>그래서 결과는?</b> 병렬로 계산할 수 있게 되자 학습이 훨씬 빨라졌습니다. base 모델은 GPU 8장으로 12시간 만에 학습됐고, 큰 모델은 영→독·영→불 번역에서 당시 최고 품질(BLEU 28.4, 41.8)을 기록했습니다. 기존 모델보다 학습 비용은 훨씬 적었습니다.
+          </div>
+          <div class="callout">
+            <b>오늘 본 것 한 줄씩</b>
+            <ul style="margin:6px 0 0;padding-left:1.2em">
+              <li><b>Self-attention</b>: 모든 단어가 서로를 한 번에 직접 참고합니다(Part 3).</li>
+              <li><b>구조</b>: attention + FFN 블록을 쌓은 인코더와 디코더, 그 사이를 잇는 cross-attention(Part 2, 4).</li>
+              <li><b>위치 인코딩</b>: 순서를 모르는 attention에 위치 정보를 더해 줍니다(Part 5).</li>
+            </ul>
+            <p style="margin:8px 0 0">학습 방법, 추론(beam search), 브라우저에서 직접 학습시키기는 <a href="index.html#s7">전체 실습 페이지</a>에 있습니다.</p>
+          </div>
+        </div>
+        <aside class="paper-ref">
+          <div class="ref-label">원문 대조 <a href="https://arxiv.org/abs/1706.03762" target="_blank" rel="noopener">arXiv ↗</a></div>
+          <p class="ref-sec">§4 Why Self-Attention</p>
+          <p>층 하나를 세 기준으로 비교합니다.</p>
+          <ul>
+            <li>층당 총 연산량</li>
+            <li>병렬화 정도 (필요한 최소 순차 연산 수)</li>
+            <li>장거리 의존성 사이의 경로 길이</li>
+          </ul>
+          <p class="ref-sec">Table 1</p>
+          <div class="tbl-wrap">
+            <table class="tbl">
+              <thead><tr><th>층 종류</th><th>연산량</th><th>순차</th><th>경로</th></tr></thead>
+              <tbody>
+                <tr><td>Self-Attention</td><td class="f">n²·d</td><td class="f">1</td><td class="f">1</td></tr>
+                <tr><td>Recurrent</td><td class="f">n·d²</td><td class="f">n</td><td class="f">n</td></tr>
+                <tr><td>Convolutional</td><td class="f">k·n·d²</td><td class="f">1</td><td class="f">logₖ n</td></tr>
+                <tr><td>SA (restricted)</td><td class="f">r·n·d</td><td class="f">1</td><td class="f">n/r</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <p style="margin-top:8px">모두 O(·) 표기. n은 시퀀스 길이, d는 표현 차원, k는 커널 크기, r은 restricted self-attention의 이웃 크기입니다. 합성곱의 logₖ n은 dilated convolution 기준입니다.</p>
+        </aside>
+      </div>
+      <footer class="sec-foot">
+        <label class="done-check"><input type="checkbox" data-done="why"> 이 섹션을 이해했어요</label>
+        <a class="next" href="#top">맨 위로 ↑</a>
+      </footer>
+    </section>
+
+  </main>
+</div>
+
+<script src="../../assets/site.js?v=3"></script>
+<script src="../../assets/lab-core.js?v=3"></script>
+<script src="js/s1-rnn.js?v=6"></script>
+<script src="js/s2-attention.js?v=6"></script>
+<script src="js/s3-masking.js?v=6"></script>
+<script src="js/s4-position.js?v=6"></script>
+<script src="js/s5-multihead.js?v=6"></script>
+<script src="js/s6-blocks.js?v=6"></script>
+
+<script>
+  /* 발표 페이지 전용: JS가 만드는 문구 속 원본 번호를 발표 번호로 바꾼다 */
+  (function () {
+    var SEC = {"1":"1","2":"3.1","3":"3.3","4":"5.2","5":"3.2","6":"2"}, LAB = {"1-1":"1-1","1-2":"6-1","6-1":"2-1","2-1":"3-1","2-2":"3-2","5-1":"3-3","5-2":"3-4","5-3":"3-5","3-1":"3-6","3-2":"3-7","3-3":"3-8","4-1":"5-1","4-2":"5-2","4-3":"5-3"};
+    function fix(root) {
+      var w = document.createTreeWalker(root, NodeFilter.SHOW_TEXT), n;
+      while ((n = w.nextNode())) {
+        if (n.parentNode.closest && n.parentNode.closest('.kind')) continue;
+        var t = n.nodeValue
+          .replace(/실험 (\d+-\d+)/g, function (m, k) { return '실험 ' + (LAB[k] || k); })
+          .replace(/§(\d+)(?![.\d])/g, function (m, k) { return SEC[k] || ('전체 실습 §' + k); });
+        if (t !== n.nodeValue) n.nodeValue = t;
+      }
+      root.querySelectorAll('a[href^="#s"]').forEach(function (a) {
+        var k = a.getAttribute('href').slice(2);
+        if (+k >= 7) a.setAttribute('href', 'index.html#s' + k);
+      });
+    }
+    ['s2-note', 's6-detail', 's6-ln-note'].forEach(function (id) {
+      var el = document.getElementById(id);
+      if (!el) return;
+      fix(el);
+      var cfg = { childList: true, subtree: true, characterData: true };
+      var obs = new MutationObserver(function () { obs.disconnect(); fix(el); obs.observe(el, cfg); });
+      obs.observe(el, cfg);
+    });
+    /* "Part 2 그림에서 보기" 버튼: Figure 1으로 올라가 해당 블록을 펼친다 */
+    document.addEventListener('click', function (e) {
+      var b = e.target.closest('[data-fig-open]');
+      if (!b) return;
+      var g = document.querySelector('#s6-fig [data-k="' + b.dataset.figOpen + '"]');
+      if (g) g.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+      document.getElementById('lab-6-1').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
+  })();
+  Lab.initRefs();
+  Lab.initPredicts();
+  Lab.initProgress('attention-talk');
+</script>
+
+</body>
+</html>
